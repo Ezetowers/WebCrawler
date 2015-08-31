@@ -1,9 +1,10 @@
 package WebCrawler;
 
-import org.ini4j.Ini;
+import Concurrent.Workers_Pool.java
 import Logger.Logger;
 import Logger.LogLevel;
 import java.io.*;
+import org.ini4j.Ini;
 
 public class MainClass {
     public static Ini initConfigFile() {
@@ -30,8 +31,11 @@ public class MainClass {
    	}
 
     public static void main(String[] args) {
+        // Init logger and config file
     	Ini configFile = MainClass.initConfigFile();
     	MainClass.initLogger(configFile);
+
+        // Create 
 
 
     	Logger.getInstance().terminate();
