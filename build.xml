@@ -5,7 +5,7 @@
     <property name="lib.dir"     value="lib"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
-    <property name="main-class"  value="WebCrawler.MainClass"/>
+    <property name="main-class"  value="webcrawler.MainClass"/>
 
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -18,7 +18,7 @@
     <target name="compile">
         <mkdir dir="${classes.dir}"/>
         <javac debug="true" includeantruntime="false" srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath">
-            <compilerarg line="-g"/>
+            <compilerarg line="-g -Xlint:unchecked"/>
         </javac>
 
     </target>

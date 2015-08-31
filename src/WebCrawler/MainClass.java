@@ -1,10 +1,18 @@
-package WebCrawler;
+package webcrawler;
 
-import Concurrent.Workers_Pool.java
-import Logger.Logger;
-import Logger.LogLevel;
+// Java imports
+import java.lang.Thread;
 import java.io.*;
+
+// External imports
 import org.ini4j.Ini;
+
+// Project imports
+import concurrent.Workers_Pool;
+import logger.Logger;
+import logger.LogLevel;
+import webcrawler.url.URL;
+import webcrawler.url.analyzer.URL_Analyzer_Factory;
 
 public class MainClass {
     public static Ini initConfigFile() {
@@ -35,9 +43,18 @@ public class MainClass {
     	Ini configFile = MainClass.initConfigFile();
     	MainClass.initLogger(configFile);
 
-        // Create 
+        // Create a Thread Pool
+        URL_Analyzer_Factory analyzer_factory = new URL_Analyzer_Factory();
+        Workers_Pool<URL> analyzer_pool = new Workers_Pool<URL>(5, analyzer_factory);
 
+        analyzer_pool.start();
+        try {
+            Thread.sleep(10000);
+        }
+        catch (InterruptedException e) {            
+        }
 
+        analyzer_pool.stop();
     	Logger.getInstance().terminate();
     }
 }

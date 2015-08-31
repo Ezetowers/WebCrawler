@@ -1,4 +1,4 @@
-package Logger;
+package logger;
 
 public enum LogLevel {
 	ERROR(1), 

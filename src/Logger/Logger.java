@@ -1,10 +1,10 @@
-package Logger;
+package logger;
 
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import Logger.LogLevel;
+import logger.LogLevel;
 
 
 public class Logger {
