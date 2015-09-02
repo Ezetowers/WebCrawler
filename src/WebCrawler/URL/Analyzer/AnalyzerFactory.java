@@ -9,7 +9,7 @@ import webcrawler.url.analyzer.Analyzer;
 
 
 
-public class AnalyzerFactory extends WorkersFactory {
+public class AnalyzerFactory extends WorkersFactory<URL> {
     public AnalyzerFactory() {
         queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
     }
@@ -20,6 +20,10 @@ public class AnalyzerFactory extends WorkersFactory {
 
     public Thread make() {
         return new Analyzer(this.getUniqueId(), this.logPrefix(), queue_);
+    }
+
+    public BlockingQueue<URL> getQueue() {
+        return queue_;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 10000;

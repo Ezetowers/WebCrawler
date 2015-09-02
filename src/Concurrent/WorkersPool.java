@@ -9,12 +9,13 @@ import logger.Logger;
 import logger.LogLevel;
 
 public class WorkersPool<TASK> {
-	public WorkersPool(int amount_workers, WorkersFactory factory) {
+	public WorkersPool(int amountWorkers, WorkersFactory<TASK> factory) {
 		factory_ = factory;
 		workers_ = new ArrayList<Thread>();
-		amount_workers_ = amount_workers;
+		queue_ = factory.getQueue();
+		amountWorkers_ = amountWorkers;
 
-		for (int i = 0; i < amount_workers_; ++i) {
+		for (int i = 0; i < amountWorkers_; ++i) {
 			// Initialize Workers Pool
 			Thread worker = factory_.make();
 			workers_.add(worker);
@@ -38,12 +39,14 @@ public class WorkersPool<TASK> {
 		}
 	}
 
-	/* public Boolean add_task(TASK task) {
+	public Boolean add_task(TASK task) {
+		// TODO: Check if the queue is full
 		queue_.add(task);
-	}*/
+		return true;
+	}
 
 
-	private int amount_workers_;
+	private int amountWorkers_;
 	private WorkersFactory factory_;
 	private ArrayList<Thread> workers_;
 	private BlockingQueue<TASK> queue_;
