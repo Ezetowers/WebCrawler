@@ -39,7 +39,7 @@ public class WorkersPool<TASK> {
 		}
 	}
 
-	public Boolean add_task(TASK task) {
+	public Boolean addTask(TASK task) {
 		// TODO: Check if the queue is full
 		queue_.add(task);
 		return true;

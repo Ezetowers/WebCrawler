@@ -21,7 +21,7 @@ public class Analyzer extends Worker<URL> {
 
     public void execute() throws InterruptedException {
         // TODO: Add logic
-        Logger.getInstance().log(LogLevel.INFO, logPrefix_ + "MONDONGO :)");
-        Thread.sleep(1000);
+        URL url = queue_.take();
+        Logger.getInstance().log(LogLevel.DEBUG, logPrefix_ + "Proceed to process an URL " + url.toString());
     }
 }
