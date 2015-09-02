@@ -1,14 +1,15 @@
 package concurrent;
 
-import concurrent.Workers_Factory;
+import concurrent.WorkersFactory;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
 import logger.Logger;
+import logger.LogLevel;
 
-public class Workers_Pool<TASK> {
-	public Workers_Pool(int amount_workers, Workers_Factory factory) {
+public class WorkersPool<TASK> {
+	public WorkersPool(int amount_workers, WorkersFactory factory) {
 		factory_ = factory;
 		workers_ = new ArrayList<Thread>();
 		amount_workers_ = amount_workers;
@@ -43,7 +44,7 @@ public class Workers_Pool<TASK> {
 
 
 	private int amount_workers_;
-	private Workers_Factory factory_;
+	private WorkersFactory factory_;
 	private ArrayList<Thread> workers_;
-	// private BlockingQueue<TASK> queue_;
+	private BlockingQueue<TASK> queue_;
 }

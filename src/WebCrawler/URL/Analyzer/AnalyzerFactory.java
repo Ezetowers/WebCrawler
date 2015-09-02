@@ -1,14 +1,16 @@
 package webcrawler.url.analyzer;
 
+import java.net.URL;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import concurrent.Workers_Factory;
-import webcrawler.url.analyzer.URL_Analyzer;
-import webcrawler.url.URL;
+import concurrent.WorkersFactory;
+import webcrawler.url.analyzer.Analyzer;
 
-public class URL_Analyzer_Factory extends Workers_Factory {
-    public URL_Analyzer_Factory() {
+
+
+public class AnalyzerFactory extends WorkersFactory {
+    public AnalyzerFactory() {
         queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
     }
 
@@ -17,7 +19,7 @@ public class URL_Analyzer_Factory extends Workers_Factory {
     }
 
     public Thread make() {
-        return new URL_Analyzer(this.getUniqueId(), this.logPrefix(), queue_);
+        return new Analyzer(this.getUniqueId(), this.logPrefix(), queue_);
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 10000;

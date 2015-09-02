@@ -2,7 +2,7 @@ package concurrent;
 
 import java.lang.Thread;
 
-public abstract class Workers_Factory {
+public abstract class WorkersFactory {
     public abstract Thread make();
 
     public long getUniqueId() {
