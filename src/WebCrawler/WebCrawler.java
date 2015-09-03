@@ -70,8 +70,8 @@ public class WebCrawler extends Thread {
     }
 
     private void initLogger() {
-        String logFileName = ConfigParser.get("BASIC-PARAMS", "log_file");
-        String logLevel = ConfigParser.get("BASIC-PARAMS", "log_level");
+        String logFileName = ConfigParser.get("BASIC-PARAMS", "log-file");
+        String logLevel = ConfigParser.get("BASIC-PARAMS", "log-level");
 
         Logger logger = Logger.getInstance();
         logger.init(logFileName, LogLevel.parse(logLevel));
