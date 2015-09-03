@@ -7,11 +7,9 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 
-// External imports
-import org.ini4j.Ini;
-
 // Project imports
 import concurrent.WorkersPool;
+import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.analyzer.AnalyzerFactory;
@@ -23,9 +21,8 @@ public class WebCrawler extends Thread {
     public void crawl() {
         // Init logger and config file
         pools_ = new ArrayList<WorkersPool>();
-        Ini configFile = this.initConfigFile();
-
-        this.initLogger(configFile);
+        ConfigParser.init();
+        this.initLogger();
 
         // Create the Thread pools
         ParserFactory parserFactory = new ParserFactory();
@@ -33,9 +30,9 @@ public class WebCrawler extends Thread {
         AnalyzerFactory analyzerFactory = new AnalyzerFactory(downloaderFactory.getQueue());
         parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
 
-        int analyzerThreads = Integer.parseInt(configFile.get("POOL-PARAMS", "analyzer-threads"));
-        int downloaderThreads = Integer.parseInt(configFile.get("POOL-PARAMS", "analyzer-threads"));
-        int parserThreads = Integer.parseInt(configFile.get("POOL-PARAMS", "analyzer-threads"));
+        int analyzerThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "analyzer-threads", "1"));
+        int downloaderThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "downloader-threads", "1"));
+        int parserThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "parser-threads", "1"));
 
         WorkersPool<URL> analyzerPool = new WorkersPool<URL>(analyzerThreads, analyzerFactory);
         WorkersPool<URL> downloaderPool = new WorkersPool<URL>(downloaderThreads, downloaderFactory);
@@ -72,24 +69,9 @@ public class WebCrawler extends Thread {
         Logger.getInstance().terminate();
     }
 
-    private Ini initConfigFile() {
-        // TODO: Receive the config file from an argument
-        String configFileName = "configuration.ini";
-        Ini configFile = new Ini();
-        try {
-            configFile.load(new FileReader(configFileName));
-        }
-        catch(IOException e) {
-            System.err.println("[MAIN CLASS] Could not open config file.");
-            System.err.println(e);
-            System.exit(-1);
-        } 
-        return configFile;
-    }
-
-    private void initLogger(Ini configFile) {
-        String logFileName = configFile.get("BASIC-PARAMS", "log_file");
-        String logLevel = configFile.get("BASIC-PARAMS", "log_level");
+    private void initLogger() {
+        String logFileName = ConfigParser.get("BASIC-PARAMS", "log_file");
+        String logLevel = ConfigParser.get("BASIC-PARAMS", "log_level");
 
         Logger logger = Logger.getInstance();
         logger.init(logFileName, LogLevel.parse(logLevel));
