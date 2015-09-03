@@ -4,7 +4,9 @@ package webcrawler.url.analyzer;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.concurrent.BlockingQueue;
 
@@ -15,13 +17,23 @@ import logger.LogLevel;
 
 
 public class Analyzer extends Worker<URL> {
-    public Analyzer(long threadId, String logPrefix, BlockingQueue<URL> queue) {
-        super(threadId, logPrefix, queue);
+    public Analyzer(long threadId, 
+                    String logPrefix, 
+                    BlockingQueue<URL> analyzerQueue,
+                    BlockingQueue<URL> downloadQueue) {
+        super(threadId, logPrefix, analyzerQueue);
+        downloadQueue_ = downloadQueue;
+        logPrefix_ += "[ANALYZER] ";
     }
 
     public void execute() throws InterruptedException {
-        // TODO: Add logic
         URL url = queue_.take();
-        Logger.getInstance().log(LogLevel.DEBUG, logPrefix_ + "Proceed to process an URL " + url.toString());
+        Logger.log(LogLevel.DEBUG, logPrefix_ + "Proceed to process an URL " + url.toString());
+
+        // TODO: Depot stuff
+        Logger.log(LogLevel.DEBUG, logPrefix_ + "URL succesfully processed: " + url.toString());
+        downloadQueue_.put(url);
     }
+
+    private BlockingQueue<URL> downloadQueue_;
 }

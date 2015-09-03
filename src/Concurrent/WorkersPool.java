@@ -47,7 +47,7 @@ public class WorkersPool<TASK> {
 
 
 	private int amountWorkers_;
-	private WorkersFactory factory_;
+	private WorkersFactory<TASK> factory_;
 	private ArrayList<Thread> workers_;
 	private BlockingQueue<TASK> queue_;
 }
