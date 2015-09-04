@@ -14,6 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import concurrent.Worker;
 import logger.Logger;
 import logger.LogLevel;
+import webcrawler.url.Depot;
 
 
 public class Downloader extends Worker<URL> {
@@ -22,9 +23,12 @@ public class Downloader extends Worker<URL> {
     public Downloader(long threadId, 
                       String logPrefix, 
                       BlockingQueue<URL> downloadQueue,
-                      BlockingQueue<String> parseQueue) {
+                      BlockingQueue<String> parseQueue,
+                      Depot depot) {
         super(threadId, logPrefix, downloadQueue);
         parseQueue_ = parseQueue;
+        depot_ = depot;
+
         logPrefix_ += "[DOWNLOADER] ";
     }
 
@@ -74,4 +78,5 @@ public class Downloader extends Worker<URL> {
     }
 
     private BlockingQueue<String> parseQueue_;
+    private Depot depot_;
 }

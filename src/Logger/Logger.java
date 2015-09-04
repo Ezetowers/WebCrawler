@@ -3,8 +3,12 @@ package logger;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.Date;
+
 import logger.LogLevel;
+
 
 
 public class Logger {
@@ -48,8 +52,10 @@ public class Logger {
 	private static void write(String msg) {
 		try {
 			Date date = new Date();
+			lock_.lock();
 			fstream_.write(dateFormat_.format(date) + " - " + msg + "\n");
 			fstream_.flush();
+			lock_.unlock();
 		}
 		catch(IOException e) {
 			System.err.println("[LOGGER] Error calling write() method.");
@@ -62,4 +68,5 @@ public class Logger {
 	private static DateFormat dateFormat_ = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"); 
 	private static LogLevel verbosity_;
 	private static FileWriter fstream_;
+	private static Lock lock_ = new ReentrantLock();
 }

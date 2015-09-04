@@ -13,6 +13,7 @@ import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.analyzer.AnalyzerFactory;
+import webcrawler.url.Depot;
 import webcrawler.url.downloader.DownloaderFactory;
 import webcrawler.url.parser.ParserFactory;
 
@@ -23,11 +24,14 @@ public class WebCrawler extends Thread {
         pools_ = new ArrayList<WorkersPool>();
         ConfigParser.init();
         this.initLogger();
+        Depot depot = new Depot(ConfigParser.get("BASIC-PARAMS", 
+                                                 "url-depot-filename", 
+                                                 "/tmp/urlDepot.txt"));
 
         // Create the Thread pools
         ParserFactory parserFactory = new ParserFactory();
-        DownloaderFactory downloaderFactory = new DownloaderFactory(parserFactory.getQueue());
-        AnalyzerFactory analyzerFactory = new AnalyzerFactory(downloaderFactory.getQueue());
+        DownloaderFactory downloaderFactory = new DownloaderFactory(parserFactory.getQueue(), depot);
+        AnalyzerFactory analyzerFactory = new AnalyzerFactory(downloaderFactory.getQueue(), depot);
         parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
 
         int analyzerThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "analyzer-threads", "1"));

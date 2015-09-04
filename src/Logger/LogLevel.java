@@ -67,7 +67,7 @@ public enum LogLevel {
 		throw new IllegalArgumentException("LogLevel is out of bounds.");
 	}
 
-	public final int level_;
+	private final int level_;
 	private final String PREFIX_ARRAY[] = {"[ERROR]",
 								   	 	   "[CRITIC]",
 										   "[WARNING]",

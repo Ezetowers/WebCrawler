@@ -6,12 +6,15 @@ import java.util.concurrent.BlockingQueue;
 
 import concurrent.WorkersFactory;
 import webcrawler.url.analyzer.Analyzer;
+import webcrawler.url.Depot;
 
 
 public class AnalyzerFactory extends WorkersFactory<URL> {
-    public AnalyzerFactory(BlockingQueue<URL> downloadQueue) {
+    public AnalyzerFactory(BlockingQueue<URL> downloadQueue,
+                           Depot depot) {
         queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
         downloadQueue_ = downloadQueue;
+        depot_ = depot;
     }
 
     public String logPrefix() {
@@ -22,7 +25,8 @@ public class AnalyzerFactory extends WorkersFactory<URL> {
         return new Analyzer(this.getUniqueId(), 
                             this.logPrefix(), 
                             queue_,
-                            downloadQueue_);
+                            downloadQueue_,
+                            depot_);
     }
 
     public BlockingQueue<URL> getQueue() {
@@ -32,4 +36,5 @@ public class AnalyzerFactory extends WorkersFactory<URL> {
     private static final int DEFAULT_QUEUE_SIZE = 10000;
     private BlockingQueue<URL> queue_;
     private BlockingQueue<URL> downloadQueue_;
+    private Depot depot_;
 }
