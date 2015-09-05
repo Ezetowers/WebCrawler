@@ -28,11 +28,11 @@ public class ParserFactory extends WorkersFactory<String> {
         return queue_;
     }
 
-    public void setAnalyzerQueue(BlockingQueue<URL> analyzerQueue) {
+    public void setAnalyzerQueue(BlockingQueue<String> analyzerQueue) {
         analyzerQueue_ = analyzerQueue;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 10000;
     private BlockingQueue<String> queue_;
-    private BlockingQueue<URL> analyzerQueue_;
+    private BlockingQueue<String> analyzerQueue_;
 }

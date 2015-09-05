@@ -9,10 +9,10 @@ import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.Depot;
 
 
-public class AnalyzerFactory extends WorkersFactory<URL> {
+public class AnalyzerFactory extends WorkersFactory<String> {
     public AnalyzerFactory(BlockingQueue<URL> downloadQueue,
                            Depot depot) {
-        queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
+        queue_ = new ArrayBlockingQueue<String>(DEFAULT_QUEUE_SIZE);
         downloadQueue_ = downloadQueue;
         depot_ = depot;
     }
@@ -29,12 +29,12 @@ public class AnalyzerFactory extends WorkersFactory<URL> {
                             depot_);
     }
 
-    public BlockingQueue<URL> getQueue() {
+    public BlockingQueue<String> getQueue() {
         return queue_;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 10000;
-    private BlockingQueue<URL> queue_;
+    private BlockingQueue<String> queue_;
     private BlockingQueue<URL> downloadQueue_;
     private Depot depot_;
 }

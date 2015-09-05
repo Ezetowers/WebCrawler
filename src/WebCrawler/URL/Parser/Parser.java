@@ -20,7 +20,7 @@ public class Parser extends Worker<String> {
     public Parser(long threadId, 
                     String logPrefix, 
                     BlockingQueue<String> parserQueue,
-                    BlockingQueue<URL> analyzerQueue) {
+                    BlockingQueue<String> analyzerQueue) {
         super(threadId, logPrefix, parserQueue);
         analyzerQueue_ = analyzerQueue;
         logPrefix_ += "[PARSER] ";
@@ -35,5 +35,5 @@ public class Parser extends Worker<String> {
         // downloadQueue_.put(url);
     }
 
-    private BlockingQueue<URL> analyzerQueue_;
+    private BlockingQueue<String> analyzerQueue_;
 }

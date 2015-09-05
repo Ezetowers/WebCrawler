@@ -4,7 +4,6 @@ package webcrawler;
 import java.lang.Thread;
 import java.io.*;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 // Project imports
@@ -38,7 +37,7 @@ public class WebCrawler extends Thread {
         int downloaderThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "downloader-threads", "1"));
         int parserThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "parser-threads", "1"));
 
-        WorkersPool<URL> analyzerPool = new WorkersPool<URL>(analyzerThreads, analyzerFactory);
+        WorkersPool<String> analyzerPool = new WorkersPool<String>(analyzerThreads, analyzerFactory);
         WorkersPool<URL> downloaderPool = new WorkersPool<URL>(downloaderThreads, downloaderFactory);
         WorkersPool<String> parserPool = new WorkersPool<String>(parserThreads, parserFactory);
 
@@ -49,19 +48,11 @@ public class WebCrawler extends Thread {
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
-        try {
-            URL url = new URL("http://www.atpworldtour.com");
-            analyzerPool.addTask(url);
-        }
-        catch (MalformedURLException e) {
-            System.err.println("[WEBCRAWLER] Error forming URL.");
-            System.err.println(e);
-        }
-
+        analyzerPool.addTask("http://www.atpworldtour.com");
 
         while (! Thread.interrupted()) {
             try {
-                Thread.sleep(1000); 
+                Thread.sleep(1000);
             }
             catch (InterruptedException e) {
             }
