@@ -56,14 +56,14 @@ public class Depot {
     }
 
     public void alter(String url, URLArchivedState state) {
-    	DepotEntry entry = map_.get(url);
-    	if (entry != null) {
-    		Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url + "to state " + state.toString());
-    		entry.state = state;
-    	} else {
-    		// TODO: This should not happen!!
-    		throw new IllegalStateException("[DEPOT] URL doesn't exists in alter.");
-    	}
+        DepotEntry entry = map_.get(url);
+        if (entry != null) {
+            Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url + "to state " + state.toString());
+            entry.state = state;
+        } else {
+            // TODO: This should not happen!!
+            throw new IllegalStateException("[DEPOT] URL doesn't exists in alter.");
+        }
     }
 
     public void dump() {

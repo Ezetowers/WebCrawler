@@ -18,7 +18,7 @@ import webcrawler.url.Depot;
 
 
 public class Downloader extends Worker<URL> {
-	private final String USER_AGENT = "Mozilla/5.0";
+    private final String USER_AGENT = "Googlebot/2.1 (+http://www.google.com/bot.html)";
 
     public Downloader(long threadId, 
                       String logPrefix, 
@@ -35,48 +35,57 @@ public class Downloader extends Worker<URL> {
     public void execute() throws InterruptedException {
         // TODO: Add logic
         URL url = queue_.take();
-        Logger.log(LogLevel.DEBUG, logPrefix_ + "Proceed to process an URL " + url.toString());
+        urlLogPrefix_ = logPrefix_ + "[URL: " + url.toString() + "] ";
 
+        // Open connection
         HttpURLConnection connection;
         try {
-        	connection = (HttpURLConnection) url.openConnection();
-        	connection.setRequestMethod("GET");
-			connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection = (HttpURLConnection) url.openConnection();
+            Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Connection was established succesfully");
+
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", USER_AGENT);
         }
         catch (IOException e) {
-        	Logger.log(LogLevel.ERROR, logPrefix_ + "Connection error: " + e.toString());
-        	return;
+            Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Connection error: " + e.toString());
+            depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
+            return;
         }
 
+        // Retrieve the URL body
         try {
-        	int responseCode = connection.getResponseCode();
-        	if (responseCode != 200) {
-        		Logger.log(LogLevel.ERROR, logPrefix_ + "HTTP GET Response arrived with errors. Code: " + responseCode);
-        		return;
-        	}
-        	Logger.log(LogLevel.DEBUG, logPrefix_ + "Response Code: " + responseCode);
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+                Logger.log(LogLevel.ERROR, urlLogPrefix_ + "HTTP GET Response arrived with errors. Code: " + responseCode);
+                depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
+                return;
+            }
+            Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Response Code: " + responseCode);
         }
         catch (IOException e) {
-        	Logger.log(LogLevel.ERROR, logPrefix_ + "Error while getting response: " + e.toString());
+            Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Error while getting response: " + e.toString());
+            depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
         }
 
+        // Send the body to the parser
         try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
 
-			in.close();
+            in.close();
             parseQueue_.put(response.toString());
-		}
-	    catch (IOException e) {
-        	Logger.log(LogLevel.ERROR, logPrefix_ + "Error while getting response: " + e.toString());
+        }
+        catch (IOException e) {
+            Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Error while getting response: " + e.toString());
         }
     }
 
     private BlockingQueue<String> parseQueue_;
     private Depot depot_;
+    private String urlLogPrefix_;
 }
