@@ -31,6 +31,7 @@ public class WorkersPool<TASK> {
     public void stop() {
         for (Thread worker : workers_) {
             try {
+                
                 worker.interrupt();
                 worker.join();
             }

@@ -10,7 +10,8 @@ public abstract class Worker<TASK> extends Thread {
     public Worker(long threadId, String logPrefix, BlockingQueue<TASK> queue) {
         queue_ = queue;
         threadId_ = threadId;
-        logPrefix_ = "[" + logPrefix + " Thread ID: " + threadId_ + "] ";
+        // logPrefix_ = "[" + logPrefix + " Thread ID: " + threadId_ + "] ";
+        logPrefix_ = "[TID: " + threadId_ + "] ";
     }
 
     public void run() {

@@ -1,14 +1,16 @@
 package webcrawler.url.parser;
 
-import java.lang.reflect.Field;
+// import java.lang.reflect.Field
+import java.lang.System;
 
 // Java imports
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-
 import java.io.FileWriter;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
@@ -35,14 +37,64 @@ public class Parser extends Worker<URLData> {
     public void execute() throws InterruptedException {
         URLData urldata = queue_.take();
         urlLogPrefix_ = logPrefix_ + "[URL: " + urldata.url + "] ";
-
-        Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "A packet arrived.");
-        Logger.log(LogLevel.TRACE, logPrefix_ + urldata.body);
-
         this.parseBody(urldata);
     }
 
-    private void parseBody(URLData urldata) {
+    private void parseBody(URLData urlData) {
+        String[] lines = urlData.body.split("\n");
+
+        startTime_ = System.currentTimeMillis();
+        for (String line : lines) {
+            this.searchHyperlinkTags(urlData.url, line);
+
+            /* startTime_ = System.currentTimeMillis();
+            // this.searchImgTags(urlData.url, line);
+            elapsedTime_ = System.currentTimeMillis() - startTime_;*/
+        }
+        elapsedTime_ = System.currentTimeMillis() - startTime_;
+        Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Time elapsed processing URL: " + elapsedTime_ + " ms.");
+    }
+
+    private void searchHyperlinkTags(String url, String line) {
+        Pattern pattern = Pattern.compile("href=\"([^\"]*)\" ");
+        Matcher matcher = pattern.matcher(line);
+
+        if (matcher.find()) {
+            String urlMatched = matcher.group(1);
+            if (urlMatched.startsWith("/")) {
+                urlMatched = url + urlMatched;
+            }
+            else if (urlMatched.endsWith(".css")) {
+                // TODO:
+                return;
+            }
+            else if (! urlMatched.startsWith("http://") && ! urlMatched.startsWith("https://")) {
+                Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Don't know how to parse this URL: " + urlMatched);
+                return;
+            }
+
+            Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "URL parsed: " + urlMatched);
+            try {
+                analyzerQueue_.put(urlMatched);
+            }
+            catch (InterruptedException e) {
+                Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Could not add URL to Analyzer queue. Error: " + e);
+            }
+        }
+    }
+
+    private BlockingQueue<String> analyzerQueue_;
+    private String urlLogPrefix_;
+
+    // For performance stats
+    private long startTime_;
+    private long elapsedTime_;
+}
+
+
+
+
+    /*private void parseBody(URLData urldata) {
         try { 
             // Get the array of chars of the string with Reflection. See this topic for more information:
             // http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
@@ -86,7 +138,7 @@ public class Parser extends Worker<URLData> {
             if (urlParsed.startsWith("/")) {
                 urlParsed = url + urlParsed;
             }
-            /* else if (urlParsed.equals("#")) {
+            else if (urlParsed.equals("#")) {
                 // TODO: Investigate if this kind of URLs give us more information
                 // Format of this <a...> tags
                 // <a href="#" some-property="relative-url">
@@ -102,7 +154,7 @@ public class Parser extends Worker<URLData> {
                     newString += chars[i];
                     ++i;
                 }
-            } */ 
+            } 
             else if (! urlParsed.startsWith("http://")) {
                 Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Don't know how to parse this URL: " + urlParsed);
                 return i;
@@ -112,7 +164,7 @@ public class Parser extends Worker<URLData> {
             try {
                 analyzerQueue_.put(urlParsed);
             }
-            catch (InterruptedException e ) {
+            catch (InterruptedException e) {
                 Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Could not add URL to Analyzer queue. Error: " + e);
             }
         }
@@ -123,8 +175,4 @@ public class Parser extends Worker<URLData> {
     private int searchImgTags(String url, char[] chars, int i) {
         // TODO:
         return i;
-    }
-
-    private BlockingQueue<String> analyzerQueue_;
-    private String urlLogPrefix_;
-}
+    }*/
