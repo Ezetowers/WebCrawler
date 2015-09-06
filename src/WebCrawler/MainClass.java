@@ -9,5 +9,6 @@ public class MainClass {
         WebCrawler app = new WebCrawler();
         Runtime.getRuntime().addShutdownHook(app);
         app.crawl();
+        app.join();
     }
 }

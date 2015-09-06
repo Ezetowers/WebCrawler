@@ -15,6 +15,7 @@ import concurrent.Worker;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.Depot;
+import webcrawler.url.URLData;
 
 
 public class Downloader extends Worker<URL> {
@@ -23,7 +24,7 @@ public class Downloader extends Worker<URL> {
     public Downloader(long threadId, 
                       String logPrefix, 
                       BlockingQueue<URL> downloadQueue,
-                      BlockingQueue<String> parseQueue,
+                      BlockingQueue<URLData> parseQueue,
                       Depot depot) {
         super(threadId, logPrefix, downloadQueue);
         parseQueue_ = parseQueue;
@@ -48,7 +49,7 @@ public class Downloader extends Worker<URL> {
         }
         catch (IOException e) {
             Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Connection error: " + e.toString());
-            depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
+            depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
             return;
         }
 
@@ -57,14 +58,15 @@ public class Downloader extends Worker<URL> {
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
                 Logger.log(LogLevel.ERROR, urlLogPrefix_ + "HTTP GET Response arrived with errors. Code: " + responseCode);
-                depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
+                depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
                 return;
             }
-            Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Response Code: " + responseCode);
+            Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "URL sucessfully downloaded");
+            depot_.alter(url.toString(), Depot.URLArchivedState.DOWNLOADED);
         }
         catch (IOException e) {
             Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Error while getting response: " + e.toString());
-            depot.alter(url.toString(), Depot.URLArchiveState.UNREACHABLE);
+            depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
         }
 
         // Send the body to the parser
@@ -74,18 +76,18 @@ public class Downloader extends Worker<URL> {
             StringBuffer response = new StringBuffer();
 
             while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+                response.append(inputLine + "\n");
             }
 
             in.close();
-            parseQueue_.put(response.toString());
+            parseQueue_.put(new URLData(url.toString(), response.toString()));
         }
         catch (IOException e) {
             Logger.log(LogLevel.ERROR, urlLogPrefix_ + "Error while getting response: " + e.toString());
         }
     }
 
-    private BlockingQueue<String> parseQueue_;
+    private BlockingQueue<URLData> parseQueue_;
     private Depot depot_;
     private String urlLogPrefix_;
 }

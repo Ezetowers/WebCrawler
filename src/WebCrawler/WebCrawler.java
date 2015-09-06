@@ -15,6 +15,7 @@ import webcrawler.url.analyzer.AnalyzerFactory;
 import webcrawler.url.Depot;
 import webcrawler.url.downloader.DownloaderFactory;
 import webcrawler.url.parser.ParserFactory;
+import webcrawler.url.URLData;
 
 
 public class WebCrawler extends Thread {
@@ -39,7 +40,7 @@ public class WebCrawler extends Thread {
 
         WorkersPool<String> analyzerPool = new WorkersPool<String>(analyzerThreads, analyzerFactory);
         WorkersPool<URL> downloaderPool = new WorkersPool<URL>(downloaderThreads, downloaderFactory);
-        WorkersPool<String> parserPool = new WorkersPool<String>(parserThreads, parserFactory);
+        WorkersPool<URLData> parserPool = new WorkersPool<URLData>(parserThreads, parserFactory);
 
         pools_.add(analyzerPool);
         pools_.add(downloaderPool);
@@ -48,13 +49,16 @@ public class WebCrawler extends Thread {
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
-        analyzerPool.addTask("http://www.atpworldtour.com");
+        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", "initial-url", "www.atpworldtour.com"));
 
         while (! Thread.interrupted()) {
             try {
                 Thread.sleep(1000);
+                depot.size();
+                // depot.dump();
             }
             catch (InterruptedException e) {
+                break;
             }
         }
     }

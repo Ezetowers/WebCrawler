@@ -7,10 +7,11 @@ import java.util.concurrent.BlockingQueue;
 import concurrent.WorkersFactory;
 import webcrawler.url.downloader.Downloader;
 import webcrawler.url.Depot;
+import webcrawler.url.URLData;
 
 
 public class DownloaderFactory extends WorkersFactory<URL> {
-    public DownloaderFactory(BlockingQueue<String> parseQueue,
+    public DownloaderFactory(BlockingQueue<URLData> parseQueue,
                              Depot depot) {
         queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
         parseQueue_ = parseQueue;
@@ -33,8 +34,8 @@ public class DownloaderFactory extends WorkersFactory<URL> {
         return queue_;
     }
 
-    private static final int DEFAULT_QUEUE_SIZE = 10000;
+    private static final int DEFAULT_QUEUE_SIZE = 100000;
     private BlockingQueue<URL> queue_;
-    private BlockingQueue<String> parseQueue_;
+    private BlockingQueue<URLData> parseQueue_;
     private Depot depot_;
 }

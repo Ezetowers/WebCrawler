@@ -5,6 +5,8 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.net.URL;
 import java.time.LocalTime;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import configparser.ConfigParser;
 import logger.Logger;
@@ -29,16 +31,16 @@ public class Depot {
 
     public Depot(String depotFilename) {
         depotFilename_ = depotFilename;
-        /* UNREACHABLE_TIMEOUT = Long.parseLong(ConfigParser.get("DEPOT-PARAMS", 
-                                                              "unreachable-timeout", 
-                                                              "60"), 36);*/
+        map_ = new Hashtable<String, DepotEntry>();
+        lock_ = new ReentrantLock();
     }
 
     /**
      * @brief Insert an URL into de Depot
-     * @return Return the state 
+     * @return Return the state of the URL
      */
     public URLArchivedState add(String url) {
+        lock_.lock();
         DepotEntry entry = map_.get(url);
         URLArchivedState state = null;
 
@@ -52,21 +54,28 @@ public class Depot {
                 + entry.state.toString());
         }
 
+        lock_.unlock();
         return entry.state;
     }
 
     public void alter(String url, URLArchivedState state) {
+        lock_.lock();
         DepotEntry entry = map_.get(url);
+
         if (entry != null) {
-            Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url + "to state " + state.toString());
+            Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url + " to state " + state.toString());
             entry.state = state;
         } else {
             // TODO: This should not happen!!
+            lock_.unlock();
             throw new IllegalStateException("[DEPOT] URL doesn't exists in alter.");
         }
+
+        lock_.unlock();
     }
 
     public void dump() {
+        lock_.lock();
         Set<String> keys = map_.keySet();
         Logger.log(LogLevel.DEBUG, "[DEPOT] Dump URL states:");
 
@@ -74,10 +83,18 @@ public class Depot {
             URLArchivedState state = map_.get(key).state;
             Logger.log(LogLevel.DEBUG, "[DEPOT] URL: " + key + " - State: " + state.toString());
         }
+        lock_.unlock();
     }
 
-    private Hashtable<String, DepotEntry> map_ = new Hashtable<String, DepotEntry>();
-    // private ObjectOutputStream serializer_;
+    public int size() {
+        lock_.lock();
+        int size = map_.size();
+        lock_.unlock();
+        Logger.log(LogLevel.DEBUG, "[DEPOT] Size: " + size);
+        return map_.size();
+    }
+
+    private Hashtable<String, DepotEntry> map_;
     private String depotFilename_;
-    // private final long UNREACHABLE_TIMEOUT;
+    private Lock lock_;
 }

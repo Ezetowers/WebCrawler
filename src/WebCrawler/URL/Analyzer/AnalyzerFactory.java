@@ -33,7 +33,7 @@ public class AnalyzerFactory extends WorkersFactory<String> {
         return queue_;
     }
 
-    private static final int DEFAULT_QUEUE_SIZE = 10000;
+    private static final int DEFAULT_QUEUE_SIZE = 100000;
     private BlockingQueue<String> queue_;
     private BlockingQueue<URL> downloadQueue_;
     private Depot depot_;

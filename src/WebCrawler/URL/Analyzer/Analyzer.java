@@ -44,7 +44,7 @@ public class Analyzer extends Worker<String> {
                 downloadQueue_.put(url);
             }
             else {
-                Logger.log(LogLevel.INFO, logPrefix_ + "URL is malformed. .");
+                Logger.log(LogLevel.INFO, logPrefix_ + "URL is malformed.");
                 // TODO:
             }
         }
