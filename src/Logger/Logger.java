@@ -65,7 +65,8 @@ public class Logger {
     }
 
     private static Logger logger_ = new Logger();
-    private static DateFormat dateFormat_ = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"); 
+    private static DateFormat dateFormat_ = 
+        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"); 
     private static LogLevel verbosity_;
     private static FileWriter fstream_;
     private static Lock lock_ = new ReentrantLock();

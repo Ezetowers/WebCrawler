@@ -30,7 +30,8 @@ public abstract class Worker<TASK> extends Thread {
 
         if (stop_) {
             Logger.log(LogLevel.NOTICE, logPrefix_ 
-                + "Thread stopped because max amount of URLs to analyzer was reached");
+                + "Thread stopped because max amount of URLs to analyzer "
+                + "was reached");
         }
         Logger.log(LogLevel.INFO, logPrefix_ + "Thread ended.");
     }

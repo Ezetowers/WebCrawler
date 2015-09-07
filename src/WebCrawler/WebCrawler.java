@@ -31,17 +31,25 @@ public class WebCrawler extends Thread {
 
         // Create the Thread pools
         ParserFactory parserFactory = new ParserFactory();
-        DownloaderFactory downloaderFactory = new DownloaderFactory(parserFactory.getQueue(), depot);
-        AnalyzerFactory analyzerFactory = new AnalyzerFactory(downloaderFactory.getQueue(), depot);
+        DownloaderFactory downloaderFactory = 
+            new DownloaderFactory(parserFactory.getQueue(), depot);
+        AnalyzerFactory analyzerFactory = 
+            new AnalyzerFactory(downloaderFactory.getQueue(), depot);
         parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
 
-        int analyzerThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "analyzer-threads", "1"));
-        int downloaderThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "downloader-threads", "1"));
-        int parserThreads = Integer.parseInt(ConfigParser.get("POOL-PARAMS", "parser-threads", "1"));
+        int analyzerThreads = Integer.parseInt(
+            ConfigParser.get("POOL-PARAMS", "analyzer-threads", "1"));
+        int downloaderThreads = Integer.parseInt(
+            ConfigParser.get("POOL-PARAMS", "downloader-threads", "1"));
+        int parserThreads = Integer.parseInt(
+            ConfigParser.get("POOL-PARAMS", "parser-threads", "1"));
 
-        WorkersPool<String> analyzerPool = new WorkersPool<String>(analyzerThreads, analyzerFactory);
-        WorkersPool<URL> downloaderPool = new WorkersPool<URL>(downloaderThreads, downloaderFactory);
-        WorkersPool<URLData> parserPool = new WorkersPool<URLData>(parserThreads, parserFactory);
+        WorkersPool<String> analyzerPool = 
+            new WorkersPool<String>(analyzerThreads, analyzerFactory);
+        WorkersPool<URL> downloaderPool = 
+            new WorkersPool<URL>(downloaderThreads, downloaderFactory);
+        WorkersPool<URLData> parserPool = 
+            new WorkersPool<URLData>(parserThreads, parserFactory);
 
         pools_.add(analyzerPool);
         pools_.add(downloaderPool);
@@ -50,7 +58,9 @@ public class WebCrawler extends Thread {
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
-        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", "initial-url", "http://www.atpworldtour.com"));
+        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", 
+                                              "initial-url", 
+                                              "http://www.atpworldtour.com"));
 
         while (! Thread.interrupted() && Analyzer.continueAnalyzing()) {
             try {

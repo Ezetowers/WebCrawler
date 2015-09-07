@@ -26,7 +26,9 @@ public abstract class ResourceMatcher {
         return ResourceMatched.UNKNOWN;
     }
 
-    abstract public ResourceMatched match(String url, String line, String [] match);
+    abstract public ResourceMatched match(String url, 
+                                          String line, 
+                                          String[] match);
 
     protected ResourceMatcher next_;
 }

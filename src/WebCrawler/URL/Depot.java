@@ -50,7 +50,8 @@ public class Depot {
             map_.put(url, entry);
         }
         else {
-            Logger.log(LogLevel.INFO, "[DEPOT] URL " + url + " already exists. State: " 
+            Logger.log(LogLevel.INFO, "[DEPOT] URL " + url 
+                + " already exists. State: " 
                 + entry.state.toString());
         }
 
@@ -63,12 +64,14 @@ public class Depot {
         DepotEntry entry = map_.get(url);
 
         if (entry != null) {
-            Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url + " to state " + state.toString());
+            Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url 
+                + " to state " + state.toString());
             entry.state = state;
         } else {
             // TODO: This should not happen!!
             lock_.unlock();
-            throw new IllegalStateException("[DEPOT] URL doesn't exists in alter.");
+            throw new IllegalStateException("[DEPOT] URL doesn't exists in "
+                + "alter.");
         }
 
         lock_.unlock();
@@ -81,7 +84,8 @@ public class Depot {
 
         for (String key : keys) {
             URLArchivedState state = map_.get(key).state;
-            Logger.log(LogLevel.DEBUG, "[DEPOT] URL: " + key + " - State: " + state.toString());
+            Logger.log(LogLevel.DEBUG, "[DEPOT] URL: " + key + " - State: " 
+                + state.toString());
         }
         lock_.unlock();
     }

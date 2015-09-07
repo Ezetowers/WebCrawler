@@ -28,7 +28,8 @@ public class URLResourceMatcher extends ResourceMatcher {
             if (urlMatched.startsWith("/")) {
                 urlMatched = url + urlMatched;
             }
-            else if (! urlMatched.startsWith("http://") && ! urlMatched.startsWith("https://")) {
+            else if (! urlMatched.startsWith("http://") 
+                && ! urlMatched.startsWith("https://")) {
                 return this.next(url, line, match);
             }
         }
@@ -38,7 +39,8 @@ public class URLResourceMatcher extends ResourceMatcher {
         }
 
         // Check if the URL has an extension
-        pattern = Pattern.compile("^.*\\.(jpg|JPG|gif|GIF|doc|DOC|docx|DOCX|pdf|PDF)$");
+        String extRegex = "^.*\\.(jpg|JPG|gif|GIF|doc|DOC|docx|DOCX|pdf|PDF)$";
+        pattern = Pattern.compile(extRegex);
         matcher = pattern.matcher(urlMatched);
         if (matcher.find()) {
             match[0] = urlMatched;

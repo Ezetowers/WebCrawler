@@ -63,35 +63,43 @@ public class Parser extends Worker<URLData> {
         for (String line : lines) {
             String[] resourceMatched = new String[1];
 
-            ResourceMatcher.ResourceMatched matched = chain_.match(urlData.url, line, resourceMatched);
+            ResourceMatcher.ResourceMatched matched = 
+                chain_.match(urlData.url, line, resourceMatched);
             try {
                 switch (matched) {
                     case URL:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "URL parsed: " + resourceMatched[0]);
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                            + "URL parsed: " + resourceMatched[0]);
                         analyzerQueue_.put(resourceMatched[0]);
                         break;
                     case IMG:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                            + "IMG parsed: " + resourceMatched[0]);
                         break;
                     case DOC:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "DOC parsed: " + resourceMatched[0]);
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                            + "DOC parsed: " + resourceMatched[0]);
                         break;
                     case CSS:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "CSS parsed: " + resourceMatched[0]);
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                            + "CSS parsed: " + resourceMatched[0]);
                         break;
                     case JS:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "JS parsed: " + resourceMatched[0]);
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                            + "JS parsed: " + resourceMatched[0]);
                         break;
                     case UNKNOWN:
                         break;
                 }
             }
             catch (InterruptedException e) {
-                Logger.log(LogLevel.ERROR, "Could not insert resource in " + matched.toString() + "queue.");
+                Logger.log(LogLevel.ERROR, "Could not insert resource in " 
+                    + matched.toString() + "queue.");
             }
         }
         elapsedTime_ = System.currentTimeMillis() - startTime_;
-        Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Time elapsed processing URL: " + elapsedTime_ + " ms.");
+        Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
+            + "Time elapsed processing URL: " + elapsedTime_ + " ms.");
     }
 
     private BlockingQueue<String> analyzerQueue_;

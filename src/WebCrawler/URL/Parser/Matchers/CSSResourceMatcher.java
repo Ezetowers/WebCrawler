@@ -10,7 +10,8 @@ import webcrawler.url.parser.matchers.ResourceMatcher;
 public class CSSResourceMatcher extends ResourceMatcher {
     // public ResourceMatched match(String url, String line) {
     public ResourceMatched match(String url, String line, String [] match) {
-        Pattern pattern = Pattern.compile("<link [^>]*href=\"([^\"]*\\.css[^\"]*)\"[^>]*>");
+        Pattern pattern = Pattern.compile(
+            "<link [^>]*href=\"([^\"]*\\.css[^\"]*)\"[^>]*>");
         Matcher matcher = pattern.matcher(line);
         String urlMatched = new String();
 

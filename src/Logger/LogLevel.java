@@ -43,7 +43,8 @@ public enum LogLevel {
             return LogLevel.TRACE;
         }
 
-        throw new IllegalArgumentException("Invalid LogLevel introduced: " + level);
+        throw new IllegalArgumentException("Invalid LogLevel introduced: " 
+            + level);
     }
 
     public int level() {
@@ -69,7 +70,7 @@ public enum LogLevel {
 
     private final int level_;
     private final String PREFIX_ARRAY[] = {"[ERROR]",
-                                               "[CRITIC]",
+                                           "[CRITIC]",
                                            "[WARNING]",
                                            "[INFO]",
                                            "[NOTICE]",

@@ -15,7 +15,8 @@ public class AtomicCounter {
     public void inc() {
         lock_.lock();
         ++counter_;
-        Logger.log(LogLevel.TRACE, "[ATOMIC COUNTER] Counter value: " + counter_);
+        Logger.log(LogLevel.TRACE, "[ATOMIC COUNTER] Counter value: " 
+            + counter_);
         lock_.unlock();
     }
 

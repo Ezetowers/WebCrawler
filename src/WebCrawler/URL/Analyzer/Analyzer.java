@@ -42,14 +42,19 @@ public class Analyzer extends Worker<String> {
         urlLogPrefix_ = logPrefix_ + "[URL: " + packet.toString() + "] ";
         Analyzer.counter_.inc();
 
-        Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Checking if URL is wellformed.");
+        Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
+            + "Checking if URL is wellformed.");
         URL url = this.wellformedURL(packet);
 
         if (url != null) {
-            Logger.log(LogLevel.INFO, urlLogPrefix_ + "URL is wellformed. Proceed to search for the URL on the depot.");
+            Logger.log(LogLevel.INFO, urlLogPrefix_ 
+                + "URL is wellformed. "
+                + "Proceed to search for the URL on the depot.");
 
-            if (depot_.add(url.toString()) == Depot.URLArchivedState.TO_BE_DOWNLOADED) {
-                Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "URL succesfully processed");
+            if (depot_.add(url.toString()) == 
+                Depot.URLArchivedState.TO_BE_DOWNLOADED) {
+                Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
+                    + "URL succesfully processed");
                 downloadQueue_.put(url);
             }
             else {
@@ -68,7 +73,8 @@ public class Analyzer extends Worker<String> {
             url = new URL(urlString);
         }
         catch (MalformedURLException e) {
-            // Logger.log(LogLevel.INFO, urlLogPrefix_ + "[ANALYZER] Error forming URL.");
+            // Logger.log(LogLevel.INFO, urlLogPrefix_ 
+            //     + "[ANALYZER] Error forming URL.");
             System.err.println(e);
         }
         return url;
@@ -83,7 +89,9 @@ public class Analyzer extends Worker<String> {
             return true;
         }
         
-        Logger.log(LogLevel.DEBUG, "[ATOMIC COUNTER] Counter value: " + counter_.counter() + " - Threshold value: " + amountURLsToProcess_);
+        Logger.log(LogLevel.DEBUG, "[ATOMIC COUNTER] Counter value: " 
+            + counter_.counter() + " - Threshold value: " 
+            + amountURLsToProcess_);
         return counter_.counter() <= amountURLsToProcess_;
     }
 
@@ -91,5 +99,8 @@ public class Analyzer extends Worker<String> {
     private Depot depot_;
     private String urlLogPrefix_;
     private static final AtomicCounter counter_ = new AtomicCounter();
-    private static final long amountURLsToProcess_ = Long.valueOf(ConfigParser.get("BASIC-PARAMS", "amount-iterations", "1"));
+    private static final long amountURLsToProcess_ = 
+        Long.valueOf(ConfigParser.get("BASIC-PARAMS", 
+                                      "amount-iterations", 
+                                      "1"));
 }

@@ -10,7 +10,9 @@ import webcrawler.url.parser.matchers.ResourceMatcher;
 public class JavascriptResourceMatcher extends ResourceMatcher {
     // public ResourceMatched match(String url, String line) {
     public ResourceMatched match(String url, String line, String [] match) {
-        Pattern pattern = Pattern.compile("<script [^>]*src=\"([^\"]*\\.css[^\"]*)\"[^>]*>");
+        Pattern pattern = Pattern.compile(
+            "<script [^>]*src=\"([^\"]*\\.css[^\"]*)\"[^>]*>");
+        
         Matcher matcher = pattern.matcher(line);
         String urlMatched = new String();
 
