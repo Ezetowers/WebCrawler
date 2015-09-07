@@ -13,6 +13,8 @@ import java.util.concurrent.BlockingQueue;
 
 // Project imports
 import concurrent.Worker;
+import concurrent.AtomicCounter;
+import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.Depot;
@@ -31,20 +33,27 @@ public class Analyzer extends Worker<String> {
     }
 
     public void execute() throws InterruptedException {
+        if (! Analyzer.continueAnalyzing()) {
+            stop_ = true;
+            return;
+        }
+
         String packet = queue_.take();
-        Logger.log(LogLevel.DEBUG, logPrefix_ + "Checking if URL [" + packet + "] is wellformed.");
+        urlLogPrefix_ = logPrefix_ + "[URL: " + packet.toString() + "] ";
+        Analyzer.counter_.inc();
+
+        Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "Checking if URL is wellformed.");
         URL url = this.wellformedURL(packet);
 
         if (url != null) {
-            Logger.log(LogLevel.INFO, logPrefix_ + "URL " + url.toString() + 
-                " is wellformed. Proceed to search for the URL on the depot.");
+            Logger.log(LogLevel.INFO, urlLogPrefix_ + "URL is wellformed. Proceed to search for the URL on the depot.");
 
             if (depot_.add(url.toString()) == Depot.URLArchivedState.TO_BE_DOWNLOADED) {
-                Logger.log(LogLevel.DEBUG, logPrefix_ + "URL succesfully processed: " + url.toString());
+                Logger.log(LogLevel.DEBUG, urlLogPrefix_ + "URL succesfully processed");
                 downloadQueue_.put(url);
             }
             else {
-                Logger.log(LogLevel.INFO, logPrefix_ + "URL is malformed.");
+                Logger.log(LogLevel.INFO, urlLogPrefix_ + "URL is malformed.");
                 // TODO:
             }
         }
@@ -59,12 +68,28 @@ public class Analyzer extends Worker<String> {
             url = new URL(urlString);
         }
         catch (MalformedURLException e) {
-            Logger.log(LogLevel.INFO, "[ANALYZER] Error forming URL.");
+            // Logger.log(LogLevel.INFO, urlLogPrefix_ + "[ANALYZER] Error forming URL.");
             System.err.println(e);
         }
         return url;
     }
 
+    private static void incCounter() {
+        counter_.inc();
+    }
+
+    public static boolean continueAnalyzing() {
+        if (amountURLsToProcess_ == 0) {
+            return true;
+        }
+        
+        Logger.log(LogLevel.DEBUG, "[ATOMIC COUNTER] Counter value: " + counter_.counter() + " - Threshold value: " + amountURLsToProcess_);
+        return counter_.counter() <= amountURLsToProcess_;
+    }
+
     private BlockingQueue<URL> downloadQueue_;
     private Depot depot_;
+    private String urlLogPrefix_;
+    private static final AtomicCounter counter_ = new AtomicCounter();
+    private static final long amountURLsToProcess_ = Long.valueOf(ConfigParser.get("BASIC-PARAMS", "amount-iterations", "1"));
 }

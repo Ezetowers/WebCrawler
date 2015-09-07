@@ -7,7 +7,7 @@ import webcrawler.url.parser.matchers.ResourceMatcher;
 
 public class URLResourceMatcher extends ResourceMatcher {
     // public ResourceMatched match(String url, String line) {
-    public ResourceMatched match(String url, String line, String [] match) {
+    public ResourceMatched match(String url, String line, String[] match) {
         // <a ...href="http://wanted"...>
         Pattern pattern = Pattern.compile("<a [^>]*href=\"([^\"]*)\"[^>]*>");
         Matcher matcher = pattern.matcher(line);

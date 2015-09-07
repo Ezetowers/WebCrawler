@@ -11,6 +11,7 @@ import concurrent.WorkersPool;
 import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
+import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.analyzer.AnalyzerFactory;
 import webcrawler.url.Depot;
 import webcrawler.url.downloader.DownloaderFactory;
@@ -49,18 +50,19 @@ public class WebCrawler extends Thread {
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
-        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", "initial-url", "www.atpworldtour.com"));
+        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", "initial-url", "http://www.atpworldtour.com"));
 
-        while (! Thread.interrupted()) {
+        while (! Thread.interrupted() && Analyzer.continueAnalyzing()) {
             try {
                 Thread.sleep(1000);
-                depot.size();
-                // depot.dump();
             }
             catch (InterruptedException e) {
                 break;
             }
         }
+
+        // Dump the content of the Depot to check how the run of the program was
+        depot.dump();
     }
 
     public void run() {

@@ -55,24 +55,30 @@ public class Parser extends Worker<URLData> {
 
         startTime_ = System.currentTimeMillis();
         for (String line : lines) {
-            // TODO: HORRIBLE HACK, bue java doesn't love me. Investigate why the variable resource doesn't work
             String[] resourceMatched = new String[1];
+
             ResourceMatcher.ResourceMatched matched = chain_.match(urlData.url, line, resourceMatched);
-            switch (matched) {
-                case URL:
-                    Logger.log(LogLevel.TRACE, urlLogPrefix_ + "URL parsed: " + resourceMatched[0]);
-                    break;
-                case IMG:
-                    Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
-                    break;
-                case CSS:
-                    Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
-                    break;
-                case JS:
-                    Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
-                    break;
-                case UNKNOWN:
-                    break;
+            try {
+                switch (matched) {
+                    case URL:
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "URL parsed: " + resourceMatched[0]);
+                        analyzerQueue_.put(resourceMatched[0]);
+                        break;
+                    case IMG:
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
+                        break;
+                    case CSS:
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "CSS parsed: " + resourceMatched[0]);
+                        break;
+                    case JS:
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "JS parsed: " + resourceMatched[0]);
+                        break;
+                    case UNKNOWN:
+                        break;
+                }
+            }
+            catch (InterruptedException e) {
+                Logger.log(LogLevel.ERROR, "Could not insert resource in " + matched.toString() + "queue.");
             }
         }
         elapsedTime_ = System.currentTimeMillis() - startTime_;
