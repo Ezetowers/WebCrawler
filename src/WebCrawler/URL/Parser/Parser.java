@@ -37,7 +37,7 @@ public class Parser extends Worker<URLData> {
                   Hashtable<String, BlockingQueue<String> > resourceQueues) {
         super(threadId, logPrefix, parserQueue);
         analyzerQueue_ = analyzerQueue;
-        resourceQueues_ = resourceQueues_;
+        resourceQueues_ = resourceQueues;
         logPrefix_ += "[PARSER] ";
 
         // Chain of Responsibility used to see if there is any resource to 
@@ -79,6 +79,7 @@ public class Parser extends Worker<URLData> {
                     case DOC:
                     case CSS:
                     case JS:
+                    
                         Logger.log(LogLevel.TRACE, urlLogPrefix_ 
                             + matched.toString() + " parsed: " 
                             + resourceMatched[0]);

@@ -34,8 +34,8 @@ public class ResourceDownloader extends Worker<String> {
         super(threadId, logPrefix, downloadQueue);
         resource_ = resource;
 
-        directory_ = ConfigParser.get("[RESOURCE-PARAMS]", "directory", "/tmp");
-        directory_ += "/" + resource;
+        directory_ = ConfigParser.get("RESOURCE-PARAMS", "directory", "/tmp");
+        directory_ += "/" + resource + "/";
         logPrefix_ += "[" + resource_.toUpperCase() + " DOWNLOADER] ";
 
     }
@@ -77,7 +77,7 @@ public class ResourceDownloader extends Worker<String> {
             in.close();
 
             // Store the resource
-            File file = new File(directory_ + url);
+            File file = new File(directory_ + url.toString().replace('/', '_'));
 
             // if file doesnt exists, then create it
             if (! file.exists()) {
@@ -93,6 +93,7 @@ public class ResourceDownloader extends Worker<String> {
         catch (IOException e) {
             Logger.log(LogLevel.WARNING, logPrefix_ 
                 + "Error while getting response: " + e.toString());
+            Logger.log(LogLevel.NOTICE, "[RESOURCE] " + directory_ + urlName);
         }
         /*catch (MalformedURLException e) {
             Logger.log(LogLevel.WARNING, logPrefix_ 

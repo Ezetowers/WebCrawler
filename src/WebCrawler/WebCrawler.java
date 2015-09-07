@@ -95,11 +95,11 @@ public class WebCrawler extends Thread {
         parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
 
         int analyzerThreads = Integer.parseInt(
-            ConfigParser.get("POOL-PARAMS", "analyzer-threads", "1"));
+            ConfigParser.get("URL-PARAMS", "analyzer-threads", "1"));
         int downloaderThreads = Integer.parseInt(
-            ConfigParser.get("POOL-PARAMS", "downloader-threads", "1"));
+            ConfigParser.get("URL-PARAMS", "downloader-threads", "1"));
         int parserThreads = Integer.parseInt(
-            ConfigParser.get("POOL-PARAMS", "parser-threads", "1"));
+            ConfigParser.get("URL-PARAMS", "parser-threads", "1"));
 
         WorkersPool<String> analyzerPool = 
             new WorkersPool<String>(analyzerThreads, analyzerFactory);
