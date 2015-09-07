@@ -6,12 +6,12 @@ public abstract class ResourceMatcher {
         IMG,
         CSS,
         JS,
+        DOC,
         UNKNOWN;
     }
 
     public ResourceMatcher() {
         next_ = null;
-        resource_ = null;
     }
 
     public void setNext(ResourceMatcher matcher) {
@@ -26,20 +26,7 @@ public abstract class ResourceMatcher {
         return ResourceMatched.UNKNOWN;
     }
 
-    public String resource() {
-        if (resource_ != null && next_ != null) {
-            return resource_;
-        }
-
-        if (next_ != null) {
-            return next_.resource();
-        }
-
-        return null;
-    }
-
     abstract public ResourceMatched match(String url, String line, String [] match);
 
     protected ResourceMatcher next_;
-    protected String resource_;
 }

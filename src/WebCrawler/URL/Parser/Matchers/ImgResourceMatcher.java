@@ -49,7 +49,6 @@ public class ImgResourceMatcher extends ResourceMatcher {
         }
 
         // If we arrived here, we got a valid URL
-        resource_ = urlMatched;
         match[0] = urlMatched;
         return ResourceMatched.IMG;
     }

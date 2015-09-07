@@ -37,8 +37,29 @@ public class URLResourceMatcher extends ResourceMatcher {
             return this.next(url, line, match);
         }
 
+        // Check if the URL has an extension
+        pattern = Pattern.compile("^.*\\.(jpg|JPG|gif|GIF|doc|DOC|docx|DOCX|pdf|PDF)$");
+        matcher = pattern.matcher(urlMatched);
+        if (matcher.find()) {
+            match[0] = urlMatched;
+
+            switch (matcher.group(1)) {
+                case "jpg":
+                case "JPG":
+                case "gif":
+                case "GIF":
+                    return ResourceMatched.IMG;
+                case "doc":
+                case "DOC":
+                case "docx":
+                case "DOCX":
+                case "pdf":
+                case "PDF":
+                    return ResourceMatched.DOC;
+            }
+        }
+
         // If we arrived here, we got a valid URL
-        resource_ = urlMatched;
         match[0] = urlMatched;
         return ResourceMatched.URL;
     }

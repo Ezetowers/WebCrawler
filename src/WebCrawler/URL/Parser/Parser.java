@@ -24,6 +24,8 @@ import webcrawler.url.URLData;
 import webcrawler.url.parser.matchers.ResourceMatcher;
 import webcrawler.url.parser.matchers.URLResourceMatcher;
 import webcrawler.url.parser.matchers.ImgResourceMatcher;
+import webcrawler.url.parser.matchers.JavascriptResourceMatcher;
+import webcrawler.url.parser.matchers.CSSResourceMatcher;
 
 
 public class Parser extends Worker<URLData> {
@@ -37,10 +39,14 @@ public class Parser extends Worker<URLData> {
 
         // Chain of Responsibility used to see if there is any resource to 
         // parse in the body
-        ResourceMatcher imgMatcher = new ImgResourceMatcher();
         ResourceMatcher urlMatcher = new URLResourceMatcher();
+        ResourceMatcher imgMatcher = new ImgResourceMatcher();
+        ResourceMatcher jsMatcher = new JavascriptResourceMatcher();
+        ResourceMatcher cssMatcher = new CSSResourceMatcher();
 
         urlMatcher.setNext(imgMatcher);
+        imgMatcher.setNext(jsMatcher);
+        jsMatcher.setNext(cssMatcher);
         chain_ = urlMatcher;
     }
 
@@ -66,6 +72,9 @@ public class Parser extends Worker<URLData> {
                         break;
                     case IMG:
                         Logger.log(LogLevel.TRACE, urlLogPrefix_ + "IMG parsed: " + resourceMatched[0]);
+                        break;
+                    case DOC:
+                        Logger.log(LogLevel.TRACE, urlLogPrefix_ + "DOC parsed: " + resourceMatched[0]);
                         break;
                     case CSS:
                         Logger.log(LogLevel.TRACE, urlLogPrefix_ + "CSS parsed: " + resourceMatched[0]);
