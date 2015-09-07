@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.concurrent.BlockingQueue;
+import java.util.Hashtable;
 
 // Project imports
 import concurrent.Worker;
@@ -32,9 +33,11 @@ public class Parser extends Worker<URLData> {
     public Parser(long threadId, 
                   String logPrefix, 
                   BlockingQueue<URLData> parserQueue,
-                  BlockingQueue<String> analyzerQueue) {
+                  BlockingQueue<String> analyzerQueue,
+                  Hashtable<String, BlockingQueue<String> > resourceQueues) {
         super(threadId, logPrefix, parserQueue);
         analyzerQueue_ = analyzerQueue;
+        resourceQueues_ = resourceQueues_;
         logPrefix_ += "[PARSER] ";
 
         // Chain of Responsibility used to see if there is any resource to 
@@ -73,20 +76,15 @@ public class Parser extends Worker<URLData> {
                         analyzerQueue_.put(resourceMatched[0]);
                         break;
                     case IMG:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + "IMG parsed: " + resourceMatched[0]);
-                        break;
                     case DOC:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + "DOC parsed: " + resourceMatched[0]);
-                        break;
                     case CSS:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + "CSS parsed: " + resourceMatched[0]);
-                        break;
                     case JS:
                         Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + "JS parsed: " + resourceMatched[0]);
+                            + matched.toString() + " parsed: " 
+                            + resourceMatched[0]);
+
+                        resourceQueues_.get(matched.toString()).
+                            put(resourceMatched[0]);
                         break;
                     case UNKNOWN:
                         break;
@@ -103,6 +101,7 @@ public class Parser extends Worker<URLData> {
     }
 
     private BlockingQueue<String> analyzerQueue_;
+    private Hashtable<String, BlockingQueue<String> > resourceQueues_;
     private String urlLogPrefix_;
     private ResourceMatcher chain_;
 

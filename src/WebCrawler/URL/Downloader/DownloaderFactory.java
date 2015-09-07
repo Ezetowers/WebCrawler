@@ -3,6 +3,7 @@ package webcrawler.url.downloader;
 import java.net.URL;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.Hashtable;
 
 import concurrent.WorkersFactory;
 import webcrawler.url.downloader.Downloader;
@@ -13,6 +14,7 @@ import webcrawler.url.URLData;
 public class DownloaderFactory extends WorkersFactory<URL> {
     public DownloaderFactory(BlockingQueue<URLData> parseQueue,
                              Depot depot) {
+
         queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
         parseQueue_ = parseQueue;
         depot_ = depot;

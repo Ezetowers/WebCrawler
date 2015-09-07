@@ -4,18 +4,22 @@ package webcrawler;
 import java.lang.Thread;
 import java.io.*;
 import java.net.URL;
+import java.util.concurrent.BlockingQueue;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 // Project imports
 import concurrent.WorkersPool;
 import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
+import webcrawler.resource.ResourceFactory;
 import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.analyzer.AnalyzerFactory;
 import webcrawler.url.Depot;
 import webcrawler.url.downloader.DownloaderFactory;
 import webcrawler.url.parser.ParserFactory;
+import webcrawler.url.parser.matchers.ResourceMatcher;
 import webcrawler.url.URLData;
 
 
@@ -29,8 +33,61 @@ public class WebCrawler extends Thread {
                                                  "url-depot-filename", 
                                                  "/tmp/urlDepot.txt"));
 
-        // Create the Thread pools
-        ParserFactory parserFactory = new ParserFactory();
+        int imgResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "img-threads", 
+                                              "1"));
+        int cssResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "css-threads", 
+                                              "1"));
+        int jsResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "js-threads", 
+                                              "1"));
+        int docResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "doc-threads", 
+                                              "1"));
+
+        // Create the Resources Thread Pools
+        ResourceFactory imgFactory = new ResourceFactory(
+            ResourceMatcher.ResourceMatched.IMG.toString());
+        ResourceFactory jsFactory = new ResourceFactory(
+            ResourceMatcher.ResourceMatched.JS.toString());
+        ResourceFactory cssFactory = new ResourceFactory(
+            ResourceMatcher.ResourceMatched.CSS.toString());
+        ResourceFactory docFactory = new ResourceFactory(
+            ResourceMatcher.ResourceMatched.DOC.toString());
+
+        WorkersPool<String> imgPool = 
+            new WorkersPool<String>(imgResourceThreads, imgFactory);
+        WorkersPool<String> jsPool = 
+            new WorkersPool<String>(cssResourceThreads, cssFactory);
+        WorkersPool<String> cssPool = 
+            new WorkersPool<String>(jsResourceThreads, jsFactory);
+        WorkersPool<String> docPool = 
+            new WorkersPool<String>(docResourceThreads, docFactory);
+
+        pools_.add(imgPool);
+        pools_.add(jsPool);
+        pools_.add(cssPool);
+        pools_.add(docPool);
+
+        Hashtable<String, BlockingQueue<String> > resourceQueue =
+            new Hashtable<String, BlockingQueue<String> >();
+        resourceQueue.put(ResourceMatcher.ResourceMatched.IMG.toString(),
+                          imgFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.JS.toString(),
+                          cssFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.CSS.toString(),
+                          jsFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.DOC.toString(),
+                          docFactory.getQueue());
+
+
+        // Create the URL Thread pools
+        ParserFactory parserFactory = new ParserFactory(resourceQueue);
         DownloaderFactory downloaderFactory = 
             new DownloaderFactory(parserFactory.getQueue(), depot);
         AnalyzerFactory analyzerFactory = 

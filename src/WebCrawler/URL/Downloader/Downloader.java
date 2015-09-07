@@ -63,7 +63,8 @@ public class Downloader extends Worker<URL> {
                 Logger.log(LogLevel.ERROR, urlLogPrefix_ 
                     + "HTTP GET Response arrived with errors. Code: " 
                     + responseCode);
-                depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
+                depot_.alter(url.toString(), 
+                             Depot.URLArchivedState.UNREACHABLE);
                 return;
             }
             Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
