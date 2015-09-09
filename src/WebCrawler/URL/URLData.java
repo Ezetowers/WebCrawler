@@ -1,11 +1,21 @@
 package webcrawler.url;
 
 public class URLData {
-    public URLData(String rhsUrl, String rhsBody) {
+    public URLData(int nestingLevel,
+                   String rhsUrl) {
+        nestingLevel_ = nestingLevel;
         url = rhsUrl;
-        body = rhsBody;
+    }
+
+    public void incNestingLevel() {
+        ++nestingLevel_;
+    }
+
+    public int nestingLevel() {
+        return nestingLevel_;
     }
 
     public String url;
-    public String body;
+    public String body = "";
+    private int nestingLevel_;
 }

@@ -7,12 +7,13 @@ import java.util.concurrent.BlockingQueue;
 import concurrent.WorkersFactory;
 import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.Depot;
+import webcrawler.url.URLData;
 
 
-public class AnalyzerFactory extends WorkersFactory<String> {
-    public AnalyzerFactory(BlockingQueue<URL> downloadQueue,
+public class AnalyzerFactory extends WorkersFactory<URLData> {
+    public AnalyzerFactory(BlockingQueue<URLData> downloadQueue,
                            Depot depot) {
-        queue_ = new ArrayBlockingQueue<String>(DEFAULT_QUEUE_SIZE);
+        queue_ = new ArrayBlockingQueue<URLData>(DEFAULT_QUEUE_SIZE);
         downloadQueue_ = downloadQueue;
         depot_ = depot;
     }
@@ -29,12 +30,12 @@ public class AnalyzerFactory extends WorkersFactory<String> {
                             depot_);
     }
 
-    public BlockingQueue<String> getQueue() {
+    public BlockingQueue<URLData> getQueue() {
         return queue_;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 100000;
-    private BlockingQueue<String> queue_;
-    private BlockingQueue<URL> downloadQueue_;
+    private BlockingQueue<URLData> queue_;
+    private BlockingQueue<URLData> downloadQueue_;
     private Depot depot_;
 }

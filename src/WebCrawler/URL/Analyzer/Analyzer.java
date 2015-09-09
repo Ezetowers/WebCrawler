@@ -18,13 +18,14 @@ import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.Depot;
+import webcrawler.url.URLData;
 
 
-public class Analyzer extends Worker<String> {
+public class Analyzer extends Worker<URLData> {
     public Analyzer(long threadId, 
                     String logPrefix, 
-                    BlockingQueue<String> analyzerQueue,
-                    BlockingQueue<URL> downloadQueue,
+                    BlockingQueue<URLData> analyzerQueue,
+                    BlockingQueue<URLData> downloadQueue,
                     Depot depot) {
         super(threadId, logPrefix, analyzerQueue);
         downloadQueue_ = downloadQueue;
@@ -38,13 +39,24 @@ public class Analyzer extends Worker<String> {
             return;
         }
 
-        String packet = queue_.take();
-        urlLogPrefix_ = logPrefix_ + "[URL: " + packet.toString() + "] ";
+        URLData packet = queue_.take();
         Analyzer.counter_.inc();
+        urlLogPrefix_ = logPrefix_ + "[URL: " + packet.url.toString() + "] ";
+
+        if (packet.nestingLevel() >= nestingThreshold_) {
+            Logger.log(LogLevel.TRACE, urlLogPrefix_ + "URL nesting level: " 
+                + packet.nestingLevel()
+                + " Nesting Threshold: "
+                + nestingThreshold_);
+            Logger.log(LogLevel.DEBUG, urlLogPrefix_+ "URL won't be analyzed " 
+                 + "because nesting threshold was reached.");
+            return;
+        }
+
 
         Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
             + "Checking if URL is wellformed.");
-        URL url = this.wellformedURL(packet);
+        URL url = this.wellformedURL(packet.url);
 
         if (url != null) {
             Logger.log(LogLevel.INFO, urlLogPrefix_ 
@@ -55,15 +67,16 @@ public class Analyzer extends Worker<String> {
                 Depot.URLArchivedState.TO_BE_DOWNLOADED) {
                 Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
                     + "URL succesfully processed");
-                downloadQueue_.put(url);
+                downloadQueue_.put(packet);
             }
             else {
-                Logger.log(LogLevel.INFO, urlLogPrefix_ + "URL is malformed.");
-                // TODO:
+                Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
+                    + "URL is being proccesed at the moment. Dropping.");
             }
         }
         else {
-            // TODO: I don't know yet
+            Logger.log(LogLevel.INFO, urlLogPrefix_ 
+                + "URL is malformed. Dropping.");
         }
     }
 
@@ -75,7 +88,6 @@ public class Analyzer extends Worker<String> {
         catch (MalformedURLException e) {
             // Logger.log(LogLevel.INFO, urlLogPrefix_ 
             //     + "[ANALYZER] Error forming URL.");
-            System.err.println(e);
         }
         return url;
     }
@@ -95,7 +107,7 @@ public class Analyzer extends Worker<String> {
         return counter_.counter() <= amountURLsToProcess_;
     }
 
-    private BlockingQueue<URL> downloadQueue_;
+    private BlockingQueue<URLData> downloadQueue_;
     private Depot depot_;
     private String urlLogPrefix_;
     private static final AtomicCounter counter_ = new AtomicCounter();
@@ -103,4 +115,8 @@ public class Analyzer extends Worker<String> {
         Long.valueOf(ConfigParser.get("BASIC-PARAMS", 
                                       "amount-iterations", 
                                       "1"));
+    private static final int nestingThreshold_ = 
+        Integer.parseInt(ConfigParser.get("URL-PARAMS", 
+                                          "nesting-threshold", 
+                                          "1"));
 }

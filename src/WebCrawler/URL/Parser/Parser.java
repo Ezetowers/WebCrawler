@@ -33,7 +33,7 @@ public class Parser extends Worker<URLData> {
     public Parser(long threadId, 
                   String logPrefix, 
                   BlockingQueue<URLData> parserQueue,
-                  BlockingQueue<String> analyzerQueue,
+                  BlockingQueue<URLData> analyzerQueue,
                   Hashtable<String, BlockingQueue<String> > resourceQueues) {
         super(threadId, logPrefix, parserQueue);
         analyzerQueue_ = analyzerQueue;
@@ -54,9 +54,9 @@ public class Parser extends Worker<URLData> {
     }
 
     public void execute() throws InterruptedException {
-        URLData urldata = queue_.take();
-        urlLogPrefix_ = logPrefix_ + "[URL: " + urldata.url + "] ";
-        this.parseBody(urldata);
+        URLData urlData = queue_.take();
+        urlLogPrefix_ = logPrefix_ + "[URL: " + urlData.url + "] ";
+        this.parseBody(urlData);
     }
 
     private void parseBody(URLData urlData) {
@@ -73,7 +73,10 @@ public class Parser extends Worker<URLData> {
                     case URL:
                         Logger.log(LogLevel.TRACE, urlLogPrefix_ 
                             + "URL parsed: " + resourceMatched[0]);
-                        analyzerQueue_.put(resourceMatched[0]);
+                        URLData newUrlData = 
+                            new URLData(urlData.nestingLevel() + 1,
+                                        resourceMatched[0]);
+                        analyzerQueue_.put(newUrlData);
                         break;
                     case IMG:
                     case DOC:
@@ -101,7 +104,7 @@ public class Parser extends Worker<URLData> {
             + "Time elapsed processing URL: " + elapsedTime_ + " ms.");
     }
 
-    private BlockingQueue<String> analyzerQueue_;
+    private BlockingQueue<URLData> analyzerQueue_;
     private Hashtable<String, BlockingQueue<String> > resourceQueues_;
     private String urlLogPrefix_;
     private ResourceMatcher chain_;

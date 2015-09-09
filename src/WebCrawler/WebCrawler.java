@@ -29,9 +29,8 @@ public class WebCrawler extends Thread {
         pools_ = new ArrayList<WorkersPool>();
         ConfigParser.init();
         this.initLogger();
-        Depot depot = new Depot(ConfigParser.get("BASIC-PARAMS", 
-                                                 "url-depot-filename", 
-                                                 "/tmp/urlDepot.txt"));
+        this.cleanEnviroment();
+        Depot depot = new Depot();
 
         int imgResourceThreads = 
             Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
@@ -101,10 +100,10 @@ public class WebCrawler extends Thread {
         int parserThreads = Integer.parseInt(
             ConfigParser.get("URL-PARAMS", "parser-threads", "1"));
 
-        WorkersPool<String> analyzerPool = 
-            new WorkersPool<String>(analyzerThreads, analyzerFactory);
-        WorkersPool<URL> downloaderPool = 
-            new WorkersPool<URL>(downloaderThreads, downloaderFactory);
+        WorkersPool<URLData> analyzerPool = 
+            new WorkersPool<URLData>(analyzerThreads, analyzerFactory);
+        WorkersPool<URLData> downloaderPool = 
+            new WorkersPool<URLData>(downloaderThreads, downloaderFactory);
         WorkersPool<URLData> parserPool = 
             new WorkersPool<URLData>(parserThreads, parserFactory);
 
@@ -115,9 +114,11 @@ public class WebCrawler extends Thread {
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
-        analyzerPool.addTask(ConfigParser.get("BASIC-PARAMS", 
-                                              "initial-url", 
-                                              "http://www.atpworldtour.com"));
+        String initialUrl = ConfigParser.get("URL-PARAMS", 
+                                             "initial-url", 
+                                             "http://www.atpworldtour.com");
+        URLData initialData = new URLData(0, initialUrl); 
+        analyzerPool.addTask(initialData);
 
         while (! Thread.interrupted() && Analyzer.continueAnalyzing()) {
             try {
@@ -155,6 +156,15 @@ public class WebCrawler extends Thread {
         for (WorkersPool pool : pools_) {
             pool.stop();
         }
+    }
+
+    /**
+     * @brief Call this function to erase all the resources and files created 
+     * in previous runs of the program
+     */
+    private void cleanEnviroment() {
+        
+
     }
 
     private ArrayList<WorkersPool> pools_;

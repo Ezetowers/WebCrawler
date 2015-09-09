@@ -11,11 +11,11 @@ import webcrawler.url.Depot;
 import webcrawler.url.URLData;
 
 
-public class DownloaderFactory extends WorkersFactory<URL> {
+public class DownloaderFactory extends WorkersFactory<URLData> {
     public DownloaderFactory(BlockingQueue<URLData> parseQueue,
                              Depot depot) {
 
-        queue_ = new ArrayBlockingQueue<URL>(DEFAULT_QUEUE_SIZE);
+        queue_ = new ArrayBlockingQueue<URLData>(DEFAULT_QUEUE_SIZE);
         parseQueue_ = parseQueue;
         depot_ = depot;
     }
@@ -32,12 +32,12 @@ public class DownloaderFactory extends WorkersFactory<URL> {
                               depot_);
     }
 
-    public BlockingQueue<URL> getQueue() {
+    public BlockingQueue<URLData> getQueue() {
         return queue_;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 100000;
-    private BlockingQueue<URL> queue_;
+    private BlockingQueue<URLData> queue_;
     private BlockingQueue<URLData> parseQueue_;
     private Depot depot_;
 }

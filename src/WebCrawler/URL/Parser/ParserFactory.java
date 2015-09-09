@@ -34,12 +34,12 @@ public class ParserFactory extends WorkersFactory<URLData> {
         return queue_;
     }
 
-    public void setAnalyzerQueue(BlockingQueue<String> analyzerQueue) {
+    public void setAnalyzerQueue(BlockingQueue<URLData> analyzerQueue) {
         analyzerQueue_ = analyzerQueue;
     }
 
     private static final int DEFAULT_QUEUE_SIZE = 100000;
     private BlockingQueue<URLData> queue_;
-    private BlockingQueue<String> analyzerQueue_;
+    private BlockingQueue<URLData> analyzerQueue_;
     private Hashtable<String, BlockingQueue<String> > resourceQueues_;
 }

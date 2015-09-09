@@ -90,15 +90,15 @@ public class ResourceDownloader extends Worker<String> {
             bw.close();
 
         }
+        catch (MalformedURLException e) {
+            Logger.log(LogLevel.WARNING, logPrefix_ 
+                + "Error forming URL: " + urlName);
+        }
         catch (IOException e) {
             Logger.log(LogLevel.WARNING, logPrefix_ 
                 + "Error while getting response: " + e.toString());
             Logger.log(LogLevel.NOTICE, "[RESOURCE] " + directory_ + urlName);
         }
-        /*catch (MalformedURLException e) {
-            Logger.log(LogLevel.WARNING, logPrefix_ 
-                + "Error forming URL: " + urlName);
-        }*/
     }
 
     private String urlLogPrefix_;

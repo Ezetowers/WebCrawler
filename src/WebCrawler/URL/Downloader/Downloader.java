@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.concurrent.BlockingQueue;
 
 // Project imports
@@ -18,13 +19,13 @@ import webcrawler.url.Depot;
 import webcrawler.url.URLData;
 
 
-public class Downloader extends Worker<URL> {
+public class Downloader extends Worker<URLData> {
     private final String USER_AGENT = 
         "Googlebot/2.1 (+http://www.google.com/bot.html)";
 
     public Downloader(long threadId, 
                       String logPrefix, 
-                      BlockingQueue<URL> downloadQueue,
+                      BlockingQueue<URLData> downloadQueue,
                       BlockingQueue<URLData> parseQueue,
                       Depot depot) {
         super(threadId, logPrefix, downloadQueue);
@@ -35,29 +36,21 @@ public class Downloader extends Worker<URL> {
     }
 
     public void execute() throws InterruptedException {
-        // TODO: Add logic
-        URL url = queue_.take();
-        urlLogPrefix_ = logPrefix_ + "[URL: " + url.toString() + "] ";
-
-        // Open connection
-        HttpURLConnection connection;
         try {
+            URLData urlData = queue_.take();
+            URL url = new URL(urlData.url);
+            urlLogPrefix_ = logPrefix_ + "[URL: " + url.toString() + "] ";
+
+            // Open connection
+            HttpURLConnection connection;
             connection = (HttpURLConnection) url.openConnection();
             Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
                 + "Connection was established succesfully");
 
             connection.setRequestMethod("GET");
             connection.setRequestProperty("User-Agent", USER_AGENT);
-        }
-        catch (IOException e) {
-            Logger.log(LogLevel.ERROR, urlLogPrefix_ 
-                + "Connection error: " + e.toString());
-            depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
-            return;
-        }
 
-        // Retrieve the URL body
-        try {
+            // Retrieve the URL body
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
                 Logger.log(LogLevel.ERROR, urlLogPrefix_ 
@@ -70,15 +63,8 @@ public class Downloader extends Worker<URL> {
             Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
                 + "URL sucessfully downloaded");
             depot_.alter(url.toString(), Depot.URLArchivedState.DOWNLOADED);
-        }
-        catch (IOException e) {
-            Logger.log(LogLevel.ERROR, urlLogPrefix_ 
-                + "Error while getting response: " + e.toString());
-            depot_.alter(url.toString(), Depot.URLArchivedState.UNREACHABLE);
-        }
 
-        // Send the body to the parser
-        try {
+            // Send the body to the parser
             BufferedReader in = new BufferedReader(
                 new InputStreamReader(connection.getInputStream()));
             String inputLine;
@@ -87,9 +73,17 @@ public class Downloader extends Worker<URL> {
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine + "\n");
             }
-
             in.close();
-            parseQueue_.put(new URLData(url.toString(), response.toString()));
+
+            urlData.body = response.toString();
+            parseQueue_.put(urlData);
+        }
+        catch (MalformedURLException e) {
+            // This cannot happen because this case was checked in 
+            // the analyzer thread
+            Logger.log(LogLevel.CRITIC, urlLogPrefix_ 
+                + "Malformed URL. Aborting program");
+            System.exit(-1);
         }
         catch (IOException e) {
             Logger.log(LogLevel.ERROR, urlLogPrefix_ 
