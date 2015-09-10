@@ -66,13 +66,13 @@ public class WebCrawler extends Thread {
                                               "1"));
 
         // Create the Resources Thread Pools
-        ResourceFactory imgFactory = new ResourceFactory(
+        ResourceFactory imgFactory = new ResourceFactory(monitorQueue,
             ResourceMatcher.ResourceMatched.IMG.toString());
-        ResourceFactory jsFactory = new ResourceFactory(
+        ResourceFactory jsFactory = new ResourceFactory(monitorQueue,
             ResourceMatcher.ResourceMatched.JS.toString());
-        ResourceFactory cssFactory = new ResourceFactory(
+        ResourceFactory cssFactory = new ResourceFactory(monitorQueue,
             ResourceMatcher.ResourceMatched.CSS.toString());
-        ResourceFactory docFactory = new ResourceFactory(
+        ResourceFactory docFactory = new ResourceFactory(monitorQueue,
             ResourceMatcher.ResourceMatched.DOC.toString());
 
         WorkersPool<String> imgPool = 

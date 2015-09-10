@@ -20,6 +20,7 @@ import concurrent.Worker;
 import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
+import monitor.MonitorEvent;
 import webcrawler.url.Depot;
 import webcrawler.url.URLData;
 
@@ -31,8 +32,10 @@ public class ResourceDownloader extends Worker<String> {
     public ResourceDownloader(long threadId, 
                               String logPrefix,
                               BlockingQueue<String> downloadQueue,
+                              BlockingQueue<MonitorEvent> monitorQueue,
                               String resource) {
         super(threadId, logPrefix, downloadQueue);
+        monitorQueue_ = monitorQueue;
         resource_ = resource;
 
         directory_ = ConfigParser.get("RESOURCE-PARAMS", "directory", "/tmp");
@@ -42,10 +45,16 @@ public class ResourceDownloader extends Worker<String> {
     }
 
     public void execute() throws InterruptedException {
+        MonitorEvent.sendStatusEvent(monitorQueue_,
+                                     resource_ + "-RESOURCE-" + threadId_, 
+                                     "DEQUEING");
         String urlName = queue_.take();
         String resourceFileName = "";
 
         try {
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                         resource_ + "-RESOURCE-" + threadId_, 
+                                         "CONNECTING");
             // Open connection
             URL url = new URL(urlName);
             HttpURLConnection connection;
@@ -56,6 +65,10 @@ public class ResourceDownloader extends Worker<String> {
             connection.setRequestMethod("GET");
             connection.setRequestProperty("User-Agent", USER_AGENT);
 
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                         resource_ + "-RESOURCE-" + threadId_, 
+                                         "DOWNLOADING");
+
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
                 Logger.log(LogLevel.ERROR, logPrefix_ 
@@ -65,6 +78,11 @@ public class ResourceDownloader extends Worker<String> {
             }
             Logger.log(LogLevel.DEBUG, logPrefix_ 
                 + "Resource sucessfully downloaded");
+
+            MonitorEvent.sendResourceMsg(monitorQueue_, resource_);
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                         resource_ + "-RESOURCE-" + threadId_, 
+                                         "STORING");
 
             InputStream in = new BufferedInputStream(
                 connection.getInputStream());
@@ -126,6 +144,7 @@ public class ResourceDownloader extends Worker<String> {
         }
     }
 
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private String urlLogPrefix_;
     private String resource_;
     private String directory_;
