@@ -20,7 +20,7 @@ import java.util.Hashtable;
 import concurrent.Worker;
 import logger.Logger;
 import logger.LogLevel;
-
+import monitor.MonitorEvent;
 import webcrawler.url.URLData;
 import webcrawler.url.parser.matchers.ResourceMatcher;
 import webcrawler.url.parser.matchers.URLResourceMatcher;
@@ -34,10 +34,12 @@ public class Parser extends Worker<URLData> {
                   String logPrefix, 
                   BlockingQueue<URLData> parserQueue,
                   BlockingQueue<URLData> analyzerQueue,
+                  BlockingQueue<MonitorEvent> monitorQueue,
                   Hashtable<String, BlockingQueue<String> > resourceQueues) {
         super(threadId, logPrefix, parserQueue);
         analyzerQueue_ = analyzerQueue;
         resourceQueues_ = resourceQueues;
+        monitorQueue_ = monitorQueue;
         logPrefix_ += "[PARSER] ";
 
         // Chain of Responsibility used to see if there is any resource to 
@@ -54,8 +56,17 @@ public class Parser extends Worker<URLData> {
     }
 
     public void execute() throws InterruptedException {
+        MonitorEvent.sendStatusEvent(monitorQueue_,
+                             "PARSER-" + threadId_, 
+                             "DEQUEING");
+
         URLData urlData = queue_.take();
         urlLogPrefix_ = logPrefix_ + "[URL: " + urlData.url + "] ";
+
+        MonitorEvent.sendStatusEvent(monitorQueue_,
+                             "PARSER-" + threadId_, 
+                             "PARSING");
+
         this.parseBody(urlData);
     }
 
@@ -105,6 +116,7 @@ public class Parser extends Worker<URLData> {
     }
 
     private BlockingQueue<URLData> analyzerQueue_;
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private Hashtable<String, BlockingQueue<String> > resourceQueues_;
     private String urlLogPrefix_;
     private ResourceMatcher chain_;

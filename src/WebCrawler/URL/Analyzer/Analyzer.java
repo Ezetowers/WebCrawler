@@ -39,11 +39,23 @@ public class Analyzer extends Worker<URLData> {
     public void execute() throws InterruptedException {
         if (! Analyzer.continueAnalyzing()) {
             stop_ = true;
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                         "ANALYZER-" + threadId_, 
+                                         "STOPPED");
             return;
         }
 
+        MonitorEvent.sendStatusEvent(monitorQueue_,
+                                     "ANALYZER-" + threadId_, 
+                                     "DEQUEING");
+
         URLData packet = queue_.take();
         Analyzer.counter_.inc();
+
+        MonitorEvent.sendStatusEvent(monitorQueue_,
+                                     "ANALYZER-" + threadId_, 
+                                     "PROCESSING");
+
         urlLogPrefix_ = logPrefix_ + "[URL: " + packet.url.toString() + "] ";
 
         if (packet.nestingLevel() >= nestingThreshold_) {
@@ -89,9 +101,8 @@ public class Analyzer extends Worker<URLData> {
             url = new URL(urlString);
         }
         catch (MalformedURLException e) {
-            // Logger.log(LogLevel.INFO, urlLogPrefix_ 
-            //     + "[ANALYZER] Error forming URL.");
         }
+
         return url;
     }
 

@@ -15,7 +15,10 @@ import logger.LogLevel;
 public class StatsManager extends Thread {
     public StatsManager() {
         lock_ = new ReentrantLock();
+        threadsState_ = new Hashtable<String, String>();
+        resourcesInfo_ = new Hashtable<String, Integer>();
         logPrefix_ = "[STATS_MANAGER] ";
+        urlDownloadedCounter_ = 0;
     }
 
     public void run() {
@@ -24,12 +27,12 @@ public class StatsManager extends Thread {
                 // THREAD STATS
                 FileWriter fileWriter = new FileWriter(statsFile_, false);
                 fileWriter.write("Amount URLs Downloaded: " 
-                    + urlDownloadedCounter_);
-                fileWriter.write("THREAD STATES: ");
+                    + urlDownloadedCounter_ + "\n");
+                fileWriter.write("THREAD STATES: \n");
 
                 Set<String> keys = threadsState_.keySet();
                 for (String key : keys) {
-                    String line = key + ": - " + threadsState_.get(key);
+                    String line = key + ": - " + threadsState_.get(key) + "\n";
                     fileWriter.write(line);
                 }
 

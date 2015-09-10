@@ -15,6 +15,7 @@ import logger.Logger;
 import logger.LogLevel;
 import monitor.MonitorFactory;
 import monitor.MonitorEvent;
+import monitor.StatsManager;
 import webcrawler.resource.ResourceFactory;
 import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.analyzer.AnalyzerFactory;
@@ -34,8 +35,19 @@ public class WebCrawler extends Thread {
         this.recreateEnviroment();
         Depot depot = new Depot();
 
-        StatsManager stats = new StatsManager();
+        int monitorThreads = 
+            Integer.parseInt(ConfigParser.get("MONITOR-PARAMS", 
+                                              "monitor-threads", 
+                                              "1"));
+        // Monitor objects
+        statsManager_ = new StatsManager();
+        MonitorFactory monitorFactory = new MonitorFactory(statsManager_);
+        WorkersPool<MonitorEvent> monitorPool = 
+            new WorkersPool<MonitorEvent>(monitorThreads, monitorFactory);
+        BlockingQueue<MonitorEvent> monitorQueue = monitorFactory.getQueue();
+        pools_.add(monitorPool);
 
+        // Resource objects
         int imgResourceThreads = 
             Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
                                               "img-threads", 
@@ -90,11 +102,16 @@ public class WebCrawler extends Thread {
 
 
         // Create the URL Thread pools
-        ParserFactory parserFactory = new ParserFactory(resourceQueue);
+        ParserFactory parserFactory = new ParserFactory(resourceQueue,
+                                                        monitorQueue);
         DownloaderFactory downloaderFactory = 
-            new DownloaderFactory(parserFactory.getQueue(), depot);
+            new DownloaderFactory(parserFactory.getQueue(), 
+                                  monitorQueue, 
+                                  depot);
         AnalyzerFactory analyzerFactory = 
-            new AnalyzerFactory(downloaderFactory.getQueue(), depot);
+            new AnalyzerFactory(downloaderFactory.getQueue(), 
+                                monitorQueue,
+                                depot);
         parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
 
         int analyzerThreads = Integer.parseInt(
@@ -115,6 +132,7 @@ public class WebCrawler extends Thread {
         pools_.add(downloaderPool);
         pools_.add(parserPool);
 
+        statsManager_.start();
         this.startPools();
 
         // Trigger the program adding an URL to the Analyzer Pool
@@ -135,6 +153,17 @@ public class WebCrawler extends Thread {
     }
 
     public void run() {
+        try {
+            this.stopThreads();
+        }
+        catch (InterruptedException e) {
+        }
+
+    }
+
+    public void stopThreads() throws InterruptedException {
+        statsManager_.interrupted();
+        statsManager_.join();
         this.stopPools();
         Logger.getInstance().terminate();
     }
@@ -153,7 +182,7 @@ public class WebCrawler extends Thread {
         }
     }
 
-    private void stopPools() {
+    public void stopPools() {
         for (WorkersPool pool : pools_) {
             pool.stop();
         }
@@ -168,6 +197,14 @@ public class WebCrawler extends Thread {
         String resourceDirPath = ConfigParser.get("RESOURCE-PARAMS", "directory");
         File dir = new File(resourceDirPath);
         this.deleteDirectory(dir);
+
+        // Erase stats file
+        File statsFile = new File(ConfigParser.get("MONITOR-PARAMS",
+                                                   "stats-file",
+                                                   "/tmp/stats.txt"));
+        if (statsFile.exists()) {
+            statsFile.delete();
+        }
 
         // Then create them again
         boolean dirCreated = false;
@@ -212,5 +249,5 @@ public class WebCrawler extends Thread {
     }
 
     private ArrayList<WorkersPool> pools_;
-
+    private StatsManager statsManager_;
 }

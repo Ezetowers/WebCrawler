@@ -6,15 +6,18 @@ import java.util.concurrent.BlockingQueue;
 import java.util.Hashtable;
 
 import concurrent.WorkersFactory;
+import monitor.MonitorEvent;
 import webcrawler.url.parser.Parser;
 import webcrawler.url.URLData;
 
 
 public class ParserFactory extends WorkersFactory<URLData> {
     public ParserFactory(
-        Hashtable<String, BlockingQueue<String> > resourceQueues) {
+        Hashtable<String, BlockingQueue<String> > resourceQueues,
+        BlockingQueue<MonitorEvent> monitorQueue) {
 
         queue_ = new ArrayBlockingQueue<URLData>(DEFAULT_QUEUE_SIZE);
+        monitorQueue_ = monitorQueue;
         resourceQueues_ = resourceQueues;
     }
 
@@ -27,6 +30,7 @@ public class ParserFactory extends WorkersFactory<URLData> {
                           this.logPrefix(), 
                           queue_,
                           analyzerQueue_,
+                          monitorQueue_,
                           resourceQueues_);
     }
 
@@ -41,5 +45,6 @@ public class ParserFactory extends WorkersFactory<URLData> {
     private static final int DEFAULT_QUEUE_SIZE = 100000;
     private BlockingQueue<URLData> queue_;
     private BlockingQueue<URLData> analyzerQueue_;
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private Hashtable<String, BlockingQueue<String> > resourceQueues_;
 }

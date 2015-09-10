@@ -87,7 +87,6 @@ public class Depot {
 
     public void serialize() {
         Set<String> keys = map_.keySet();
-        Logger.log(LogLevel.DEBUG, "[DEPOT] Dump URL states:");
 
         try {
             fileWriter_ = new FileWriter(depotFilename_, false);

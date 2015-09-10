@@ -18,7 +18,7 @@
     <target name="compile">
         <mkdir dir="${classes.dir}"/>
         <javac debug="true" includeantruntime="false" srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath">
-            <compilerarg line="-g -Xlint:unchecked"/>
+            <compilerarg line="-g -Xlint:unchecked -Xlint:deprecation"/>
         </javac>
 
     </target>

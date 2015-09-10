@@ -13,6 +13,7 @@ import java.util.concurrent.BlockingQueue;
 
 // Project imports
 import concurrent.Worker;
+import monitor.MonitorEvent;
 import logger.Logger;
 import logger.LogLevel;
 import webcrawler.url.Depot;
@@ -27,9 +28,11 @@ public class Downloader extends Worker<URLData> {
                       String logPrefix, 
                       BlockingQueue<URLData> downloadQueue,
                       BlockingQueue<URLData> parseQueue,
+                      BlockingQueue<MonitorEvent> monitorQueue,
                       Depot depot) {
         super(threadId, logPrefix, downloadQueue);
         parseQueue_ = parseQueue;
+        monitorQueue_ = monitorQueue;
         depot_ = depot;
 
         logPrefix_ += "[DOWNLOADER] ";
@@ -37,8 +40,17 @@ public class Downloader extends Worker<URLData> {
 
     public void execute() throws InterruptedException {
         try {
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                 "DOWNLOADER-" + threadId_, 
+                                 "DEQUEING");
+
             URLData urlData = queue_.take();
             URL url = new URL(urlData.url);
+
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                 "DOWNLOADER-" + threadId_, 
+                                 "CONNECTING");
+
             urlLogPrefix_ = logPrefix_ + "[URL: " + url.toString() + "] ";
 
             // Open connection
@@ -49,6 +61,10 @@ public class Downloader extends Worker<URLData> {
 
             connection.setRequestMethod("GET");
             connection.setRequestProperty("User-Agent", USER_AGENT);
+
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                 "DOWNLOADER-" + threadId_, 
+                                 "DOWNLOADING");
 
             // Retrieve the URL body
             int responseCode = connection.getResponseCode();
@@ -63,6 +79,11 @@ public class Downloader extends Worker<URLData> {
             Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
                 + "URL sucessfully downloaded");
             depot_.alter(url.toString(), Depot.URLArchivedState.DOWNLOADED);
+
+            MonitorEvent.sendURLDownloadMsg(monitorQueue_);
+            MonitorEvent.sendStatusEvent(monitorQueue_,
+                                 "DOWNLOADER-" + threadId_, 
+                                 "RETRIEVING");
 
             // Send the body to the parser
             BufferedReader in = new BufferedReader(
@@ -92,6 +113,7 @@ public class Downloader extends Worker<URLData> {
     }
 
     private BlockingQueue<URLData> parseQueue_;
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private Depot depot_;
     private String urlLogPrefix_;
 }
