@@ -13,6 +13,8 @@ import concurrent.WorkersPool;
 import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
+import monitor.MonitorFactory;
+import monitor.MonitorEvent;
 import webcrawler.resource.ResourceFactory;
 import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.analyzer.AnalyzerFactory;
@@ -31,6 +33,8 @@ public class WebCrawler extends Thread {
         this.initLogger();
         this.recreateEnviroment();
         Depot depot = new Depot();
+
+        StatsManager stats = new StatsManager();
 
         int imgResourceThreads = 
             Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 

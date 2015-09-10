@@ -17,6 +17,7 @@ import concurrent.AtomicCounter;
 import configparser.ConfigParser;
 import logger.Logger;
 import logger.LogLevel;
+import monitor.MonitorEvent;
 import webcrawler.url.Depot;
 import webcrawler.url.URLData;
 
@@ -26,9 +27,11 @@ public class Analyzer extends Worker<URLData> {
                     String logPrefix, 
                     BlockingQueue<URLData> analyzerQueue,
                     BlockingQueue<URLData> downloadQueue,
+                    BlockingQueue<MonitorEvent> monitorQueue,
                     Depot depot) {
         super(threadId, logPrefix, analyzerQueue);
         downloadQueue_ = downloadQueue;
+        monitorQueue_ = monitorQueue;
         depot_ = depot;
         logPrefix_ += "[ANALYZER] ";
     }
@@ -108,6 +111,7 @@ public class Analyzer extends Worker<URLData> {
     }
 
     private BlockingQueue<URLData> downloadQueue_;
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private Depot depot_;
     private String urlLogPrefix_;
     private static final AtomicCounter counter_ = new AtomicCounter();

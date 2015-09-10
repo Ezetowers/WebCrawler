@@ -5,6 +5,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import concurrent.WorkersFactory;
+import monitor.MonitorEvent;
 import webcrawler.url.analyzer.Analyzer;
 import webcrawler.url.Depot;
 import webcrawler.url.URLData;
@@ -12,8 +13,10 @@ import webcrawler.url.URLData;
 
 public class AnalyzerFactory extends WorkersFactory<URLData> {
     public AnalyzerFactory(BlockingQueue<URLData> downloadQueue,
+                           BlockingQueue<MonitorEvent> monitorQueue,
                            Depot depot) {
         queue_ = new ArrayBlockingQueue<URLData>(DEFAULT_QUEUE_SIZE);
+        monitorQueue_ = monitorQueue;
         downloadQueue_ = downloadQueue;
         depot_ = depot;
     }
@@ -27,6 +30,7 @@ public class AnalyzerFactory extends WorkersFactory<URLData> {
                             this.logPrefix(), 
                             queue_,
                             downloadQueue_,
+                            monitorQueue_,
                             depot_);
     }
 
@@ -37,5 +41,6 @@ public class AnalyzerFactory extends WorkersFactory<URLData> {
     private static final int DEFAULT_QUEUE_SIZE = 100000;
     private BlockingQueue<URLData> queue_;
     private BlockingQueue<URLData> downloadQueue_;
+    private BlockingQueue<MonitorEvent> monitorQueue_;
     private Depot depot_;
 }
