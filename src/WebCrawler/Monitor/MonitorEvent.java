@@ -35,7 +35,7 @@ public class MonitorEvent {
         throws InterruptedException {
             
         MonitorEvent monEvent = new MonitorEvent();
-        monEvent.eventType = EventType.URL;
+        monEvent.eventType = EventType.RESOURCE;
         monEvent.id = resource;
         queue.put(monEvent);
     }

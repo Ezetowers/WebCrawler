@@ -6,6 +6,7 @@ import java.lang.System;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Set;
 
 import configparser.ConfigParser;
@@ -16,7 +17,7 @@ public class StatsManager extends Thread {
     public StatsManager() {
         lock_ = new ReentrantLock();
         threadsState_ = new Hashtable<String, String>();
-        resourcesInfo_ = new Hashtable<String, Integer>();
+        resourcesInfo_ = new HashMap<String, Integer>();
         logPrefix_ = "[STATS_MANAGER] ";
         urlDownloadedCounter_ = 0;
     }
@@ -39,7 +40,7 @@ public class StatsManager extends Thread {
                 Set<String> resourcesKeys = resourcesInfo_.keySet();
                 for (String resourceKey : resourcesKeys) {
                     String line = resourceKey + ": - " 
-                        + threadsState_.get(resourceKey);
+                        + threadsState_.get(resourceKey) + "\n";
                     fileWriter.write(line);
                 }
 
@@ -80,12 +81,12 @@ public class StatsManager extends Thread {
     public void updateResourceDownloads(String resource) {
         lock_.lock();
         Integer counter = resourcesInfo_.get(resource);
+
         if (counter != null) {
-            ++counter;
+            resourcesInfo_.put(resource, new Integer(counter + 1));
         }
         else {
-            counter = new Integer(0);
-            resourcesInfo_.put(resource, counter);
+            resourcesInfo_.put(resource, new Integer(0));
         }
         lock_.unlock();
     }
@@ -93,8 +94,8 @@ public class StatsManager extends Thread {
 
 
     private Hashtable<String, String> threadsState_;
-    public long urlDownloadedCounter_;
-    public Hashtable<String, Integer> resourcesInfo_;
+    private long urlDownloadedCounter_;
+    private HashMap<String, Integer> resourcesInfo_;
 
     private String statsFile_ = ConfigParser.get("MONITOR-PARAMS",
                                                  "stats-file",
