@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import configparser.ConfigParser;
@@ -37,10 +38,11 @@ public class StatsManager extends Thread {
                     fileWriter.write(line);
                 }
 
-                Set<String> resourcesKeys = resourcesInfo_.keySet();
-                for (String resourceKey : resourcesKeys) {
-                    String line = resourceKey + ": - " 
-                        + threadsState_.get(resourceKey) + "\n";
+                fileWriter.write("Resources Downloaded: \n");
+                for (Map.Entry<String, Integer> entry : 
+                     resourcesInfo_.entrySet()) {
+                    String line = entry.getKey() + ": - " 
+                        + entry.getValue() + "\n";
                     fileWriter.write(line);
                 }
 
