@@ -29,7 +29,7 @@ public class WebCrawler extends Thread {
         pools_ = new ArrayList<WorkersPool>();
         ConfigParser.init();
         this.initLogger();
-        this.cleanEnviroment();
+        this.recreateEnviroment();
         Depot depot = new Depot();
 
         int imgResourceThreads = 
@@ -77,9 +77,9 @@ public class WebCrawler extends Thread {
             new Hashtable<String, BlockingQueue<String> >();
         resourceQueue.put(ResourceMatcher.ResourceMatched.IMG.toString(),
                           imgFactory.getQueue());
-        resourceQueue.put(ResourceMatcher.ResourceMatched.JS.toString(),
-                          cssFactory.getQueue());
         resourceQueue.put(ResourceMatcher.ResourceMatched.CSS.toString(),
+                          cssFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.JS.toString(),
                           jsFactory.getQueue());
         resourceQueue.put(ResourceMatcher.ResourceMatched.DOC.toString(),
                           docFactory.getQueue());
@@ -117,7 +117,7 @@ public class WebCrawler extends Thread {
         String initialUrl = ConfigParser.get("URL-PARAMS", 
                                              "initial-url", 
                                              "http://www.atpworldtour.com");
-        URLData initialData = new URLData(0, initialUrl); 
+        URLData initialData = new URLData(0, initialUrl);
         analyzerPool.addTask(initialData);
 
         while (! Thread.interrupted() && Analyzer.continueAnalyzing()) {
@@ -128,9 +128,6 @@ public class WebCrawler extends Thread {
                 break;
             }
         }
-
-        // Dump the content of the Depot to check how the run of the program was
-        depot.dump();
     }
 
     public void run() {
@@ -160,11 +157,54 @@ public class WebCrawler extends Thread {
 
     /**
      * @brief Call this function to erase all the resources and files created 
-     * in previous runs of the program
+     * in previous runs of the program and create new empty directories
      */
-    private void cleanEnviroment() {
-        
+    private boolean recreateEnviroment() {
+        // First erase previous files
+        String resourceDirPath = ConfigParser.get("RESOURCE-PARAMS", "directory");
+        File dir = new File(resourceDirPath);
+        this.deleteDirectory(dir);
 
+        // Then create them again
+        boolean dirCreated = false;
+        try {
+            dirCreated = dir.mkdir();
+            if (dirCreated) {
+                // Create the Folders for every resource to download later
+                for (ResourceMatcher.ResourceMatched resourceDir : 
+                     ResourceMatcher.ResourceMatched.values()) {
+                    File file = new File(dir, resourceDir.toString());
+                    file.mkdir();
+                }
+            }
+        }
+        catch(SecurityException e) {
+            Logger.log(LogLevel.CRITIC, 
+                "[RESOURCES] Cannot create resources folders. " + e);
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private boolean deleteDirectory(File dir) {
+        if (! dir.exists() || ! dir.isDirectory()) {
+            return false;
+        }
+
+        String[] children = dir.list();
+        for (int i = 0; i < children.length; ++i) {
+            File file = new File(dir, children[i]);
+            if (file.isDirectory()) {
+                this.deleteDirectory(file);
+            }
+            else {
+                file.delete();
+            }
+        }
+
+        return dir.delete();
     }
 
     private ArrayList<WorkersPool> pools_;

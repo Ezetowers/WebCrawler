@@ -86,7 +86,6 @@ public class Depot {
     }
 
     public void serialize() {
-        lock_.lock();
         Set<String> keys = map_.keySet();
         Logger.log(LogLevel.DEBUG, "[DEPOT] Dump URL states:");
 
@@ -104,9 +103,6 @@ public class Depot {
             Logger.log(LogLevel.DEBUG, 
                 "[DEPOT] Error while serializing: " + e);            
         }
-
-
-        lock_.unlock();
     }
 
     public void dump() {

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.*;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -42,6 +43,7 @@ public class ResourceDownloader extends Worker<String> {
 
     public void execute() throws InterruptedException {
         String urlName = queue_.take();
+        String resourceFileName = "";
 
         try {
             // Open connection
@@ -64,30 +66,54 @@ public class ResourceDownloader extends Worker<String> {
             Logger.log(LogLevel.DEBUG, logPrefix_ 
                 + "Resource sucessfully downloaded");
 
+            InputStream in = new BufferedInputStream(
+                connection.getInputStream());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[1024];
+            int n = 0;
+
+            while (-1 != (n = in.read(buf))) {
+               out.write(buf, 0, n);
+            }
+
+            out.close();
+            in.close();
+            byte[] response = out.toByteArray();
+
             // Send the body to the parser
-            BufferedReader in = new BufferedReader(
+            /* BufferedReader in = new BufferedReader(
                 new InputStreamReader(connection.getInputStream()));
             String inputLine;
             StringBuffer response = new StringBuffer();
 
             while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine + "\n");
+                response.append(inputLine);
             }
 
-            in.close();
+            in.close();*/
 
-            // Store the resource
-            File file = new File(directory_ + url.toString().replace('/', '_'));
+            // FIXME: Find a prettier way to do this
+            resourceFileName = directory_ + url.toString().replace("/", "");
+            resourceFileName = resourceFileName.replace(":", "");
+            resourceFileName = resourceFileName.replace(",", "");
+            resourceFileName = resourceFileName.replace("-", "");
+            resourceFileName = resourceFileName.replace("_", "");
+            File file = new File(resourceFileName);
 
             // if file doesnt exists, then create it
             if (! file.exists()) {
                 file.createNewFile();
             }
+            else {
+                Logger.log(LogLevel.DEBUG, logPrefix_ 
+                    + "Cannot store resource. " 
+                    + "Another resource with the same name exists. "
+                    + "Resource: " + resourceFileName);
+            }
 
-            FileWriter fw = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(response.toString());
-            bw.close();
+            FileOutputStream fos = new FileOutputStream(resourceFileName);
+            fos.write(response);
+            fos.close();
 
         }
         catch (MalformedURLException e) {
@@ -97,7 +123,6 @@ public class ResourceDownloader extends Worker<String> {
         catch (IOException e) {
             Logger.log(LogLevel.WARNING, logPrefix_ 
                 + "Error while getting response: " + e.toString());
-            Logger.log(LogLevel.NOTICE, "[RESOURCE] " + directory_ + urlName);
         }
     }
 

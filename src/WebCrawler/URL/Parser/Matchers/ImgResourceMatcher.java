@@ -28,7 +28,7 @@ public class ImgResourceMatcher extends ResourceMatcher {
             else {
                 // This is not an image. Let the next matcher find what to do
                 return this.next(url, line, match);
-            }
+            }            
         }
         else {
             // The img tag could be alone in the line

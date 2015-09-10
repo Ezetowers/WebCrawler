@@ -11,7 +11,7 @@ public class JavascriptResourceMatcher extends ResourceMatcher {
     // public ResourceMatched match(String url, String line) {
     public ResourceMatched match(String url, String line, String [] match) {
         Pattern pattern = Pattern.compile(
-            "<script [^>]*src=\"([^\"]*\\.css[^\"]*)\"[^>]*>");
+            "<script [^>]*src=\"([^\"]*\\.js[^\"]*)\"[^>]*>");
         
         Matcher matcher = pattern.matcher(line);
         String urlMatched = new String();
