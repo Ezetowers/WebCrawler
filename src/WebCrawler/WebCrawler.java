@@ -30,150 +30,44 @@ public class WebCrawler extends Thread {
     public void crawl() {
         // Init logger and config file
         pools_ = new ArrayList<WorkersPool>();
-        ConfigParser.init();
-        this.initLogger();
+
         this.recreateEnviroment();
-        Depot depot = new Depot();
 
-        int monitorThreads = 
-            Integer.parseInt(ConfigParser.get("MONITOR-PARAMS", 
-                                              "monitor-threads", 
-                                              "1"));
-        // Monitor objects
-        statsManager_ = new StatsManager();
-        MonitorFactory monitorFactory = new MonitorFactory(statsManager_);
-        WorkersPool<MonitorEvent> monitorPool = 
-            new WorkersPool<MonitorEvent>(monitorThreads, monitorFactory);
-        BlockingQueue<MonitorEvent> monitorQueue = monitorFactory.getQueue();
-        pools_.add(monitorPool);
-
-        // Resource objects
-        int imgResourceThreads = 
-            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
-                                              "img-threads", 
-                                              "1"));
-        int cssResourceThreads = 
-            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
-                                              "css-threads", 
-                                              "1"));
-        int jsResourceThreads = 
-            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
-                                              "js-threads", 
-                                              "1"));
-        int docResourceThreads = 
-            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
-                                              "doc-threads", 
-                                              "1"));
-
-        // Create the Resources Thread Pools
-        ResourceFactory imgFactory = new ResourceFactory(monitorQueue,
-            ResourceMatcher.ResourceMatched.IMG.toString());
-        ResourceFactory jsFactory = new ResourceFactory(monitorQueue,
-            ResourceMatcher.ResourceMatched.JS.toString());
-        ResourceFactory cssFactory = new ResourceFactory(monitorQueue,
-            ResourceMatcher.ResourceMatched.CSS.toString());
-        ResourceFactory docFactory = new ResourceFactory(monitorQueue,
-            ResourceMatcher.ResourceMatched.DOC.toString());
-
-        WorkersPool<String> imgPool = 
-            new WorkersPool<String>(imgResourceThreads, imgFactory);
-        WorkersPool<String> jsPool = 
-            new WorkersPool<String>(cssResourceThreads, cssFactory);
-        WorkersPool<String> cssPool = 
-            new WorkersPool<String>(jsResourceThreads, jsFactory);
-        WorkersPool<String> docPool = 
-            new WorkersPool<String>(docResourceThreads, docFactory);
-
-        pools_.add(imgPool);
-        pools_.add(jsPool);
-        pools_.add(cssPool);
-        pools_.add(docPool);
-
-        Hashtable<String, BlockingQueue<String> > resourceQueue =
-            new Hashtable<String, BlockingQueue<String> >();
-        resourceQueue.put(ResourceMatcher.ResourceMatched.IMG.toString(),
-                          imgFactory.getQueue());
-        resourceQueue.put(ResourceMatcher.ResourceMatched.CSS.toString(),
-                          cssFactory.getQueue());
-        resourceQueue.put(ResourceMatcher.ResourceMatched.JS.toString(),
-                          jsFactory.getQueue());
-        resourceQueue.put(ResourceMatcher.ResourceMatched.DOC.toString(),
-                          docFactory.getQueue());
-
-
-        // Create the URL Thread pools
-        ParserFactory parserFactory = new ParserFactory(resourceQueue,
-                                                        monitorQueue);
-        DownloaderFactory downloaderFactory = 
-            new DownloaderFactory(parserFactory.getQueue(), 
-                                  monitorQueue, 
-                                  depot);
-        AnalyzerFactory analyzerFactory = 
-            new AnalyzerFactory(downloaderFactory.getQueue(), 
-                                monitorQueue,
-                                depot);
-        parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
-
-        int analyzerThreads = Integer.parseInt(
-            ConfigParser.get("URL-PARAMS", "analyzer-threads", "1"));
-        int downloaderThreads = Integer.parseInt(
-            ConfigParser.get("URL-PARAMS", "downloader-threads", "1"));
-        int parserThreads = Integer.parseInt(
-            ConfigParser.get("URL-PARAMS", "parser-threads", "1"));
-
-        WorkersPool<URLData> analyzerPool = 
-            new WorkersPool<URLData>(analyzerThreads, analyzerFactory);
-        WorkersPool<URLData> downloaderPool = 
-            new WorkersPool<URLData>(downloaderThreads, downloaderFactory);
-        WorkersPool<URLData> parserPool = 
-            new WorkersPool<URLData>(parserThreads, parserFactory);
-
-        pools_.add(analyzerPool);
-        pools_.add(downloaderPool);
-        pools_.add(parserPool);
+        BlockingQueue<MonitorEvent> monitorQueue = this.createMonitorObjects();
+        Hashtable<String, BlockingQueue<String>> resourcesQueues = 
+            this.createResourcesObjects(monitorQueue);
+        this.createURLObjects(monitorQueue, resourcesQueues);
 
         statsManager_.start();
         this.startPools();
-
-        // Trigger the program adding an URL to the Analyzer Pool
-        String initialUrl = ConfigParser.get("URL-PARAMS", 
-                                             "initial-url", 
-                                             "http://www.atpworldtour.com");
-        URLData initialData = new URLData(0, initialUrl);
-        analyzerPool.addTask(initialData);
-
-        while (! Thread.interrupted() && Analyzer.continueAnalyzing()) {
-            try {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e) {
-                break;
-            }
-        }
     }
 
     public void run() {
-        try {
-            this.stopThreads();
+        Logger.log(LogLevel.NOTICE, "[WEBCRAWLER] HOOK RUNNING!!");
+        this.stopThreads();
+        /*try {
+            Thread.sleep(2000);
         }
         catch (InterruptedException e) {
+        }*/
+        Logger.log(LogLevel.NOTICE, "[WEBCRAWLER] HOOK FINISHED!!");
+    }
+
+    private void stopThreads() {
+        this.stopPools();
+    }
+
+    public void waitThreads() {
+        try {
+            statsManager_.join();
+        }
+        catch(InterruptedException e) {
+            // The thread was interrupted, we accomplish our goal. Exit.
         }
 
-    }
-
-    public void stopThreads() throws InterruptedException {
-        statsManager_.interrupted();
-        statsManager_.join();
-        this.stopPools();
-        Logger.getInstance().terminate();
-    }
-
-    private void initLogger() {
-        String logFileName = ConfigParser.get("BASIC-PARAMS", "log-file");
-        String logLevel = ConfigParser.get("BASIC-PARAMS", "log-level");
-
-        Logger logger = Logger.getInstance();
-        logger.init(logFileName, LogLevel.parse(logLevel));
+        for (WorkersPool pool : pools_) {
+            pool.join();
+        }
     }
 
     private void startPools() {
@@ -182,7 +76,7 @@ public class WebCrawler extends Thread {
         }
     }
 
-    public void stopPools() {
+    private void stopPools() {
         for (WorkersPool pool : pools_) {
             pool.stop();
         }
@@ -247,6 +141,123 @@ public class WebCrawler extends Thread {
 
         return dir.delete();
     }
+
+    private BlockingQueue<MonitorEvent> createMonitorObjects() {
+        int monitorThreads = 
+            Integer.parseInt(ConfigParser.get("MONITOR-PARAMS", 
+                                              "monitor-threads", 
+                                              "1"));
+        // Monitor objects
+        statsManager_ = new StatsManager();
+        MonitorFactory monitorFactory = new MonitorFactory(statsManager_);
+        WorkersPool<MonitorEvent> monitorPool = 
+            new WorkersPool<MonitorEvent>(monitorThreads, monitorFactory);
+        BlockingQueue<MonitorEvent> monitorQueue = monitorFactory.getQueue();
+        pools_.add(monitorPool);
+        return monitorQueue;
+    }
+
+    private Hashtable<String, BlockingQueue<String>>
+    createResourcesObjects(BlockingQueue<MonitorEvent> monitorQueue) {
+        // Resource objects
+        int imgResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "img-threads", 
+                                              "1"));
+        int cssResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "css-threads", 
+                                              "1"));
+        int jsResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "js-threads", 
+                                              "1"));
+        int docResourceThreads = 
+            Integer.parseInt(ConfigParser.get("RESOURCE-PARAMS", 
+                                              "doc-threads", 
+                                              "1"));
+
+        // Create the Resources Thread Pools
+        ResourceFactory imgFactory = new ResourceFactory(monitorQueue,
+            ResourceMatcher.ResourceMatched.IMG.toString());
+        ResourceFactory jsFactory = new ResourceFactory(monitorQueue,
+            ResourceMatcher.ResourceMatched.JS.toString());
+        ResourceFactory cssFactory = new ResourceFactory(monitorQueue,
+            ResourceMatcher.ResourceMatched.CSS.toString());
+        ResourceFactory docFactory = new ResourceFactory(monitorQueue,
+            ResourceMatcher.ResourceMatched.DOC.toString());
+
+        WorkersPool<String> imgPool = 
+            new WorkersPool<String>(imgResourceThreads, imgFactory);
+        WorkersPool<String> jsPool = 
+            new WorkersPool<String>(cssResourceThreads, cssFactory);
+        WorkersPool<String> cssPool = 
+            new WorkersPool<String>(jsResourceThreads, jsFactory);
+        WorkersPool<String> docPool = 
+            new WorkersPool<String>(docResourceThreads, docFactory);
+
+        pools_.add(imgPool);
+        pools_.add(jsPool);
+        pools_.add(cssPool);
+        pools_.add(docPool);
+
+        Hashtable<String, BlockingQueue<String>> resourceQueue =
+            new Hashtable<String, BlockingQueue<String>>();
+        resourceQueue.put(ResourceMatcher.ResourceMatched.IMG.toString(),
+                          imgFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.CSS.toString(),
+                          cssFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.JS.toString(),
+                          jsFactory.getQueue());
+        resourceQueue.put(ResourceMatcher.ResourceMatched.DOC.toString(),
+                          docFactory.getQueue());
+        return resourceQueue;
+    }
+
+    private void 
+    createURLObjects(BlockingQueue<MonitorEvent> monitorQueue,
+                     Hashtable<String, BlockingQueue<String>> resourcesQueues) {
+        Depot depot = new Depot();
+
+        // Create the URL Thread pools
+        ParserFactory parserFactory = new ParserFactory(resourcesQueues,
+                                                        monitorQueue);
+        DownloaderFactory downloaderFactory = 
+            new DownloaderFactory(parserFactory.getQueue(), 
+                                  monitorQueue, 
+                                  depot);
+        AnalyzerFactory analyzerFactory = 
+            new AnalyzerFactory(downloaderFactory.getQueue(), 
+                                monitorQueue,
+                                depot);
+        parserFactory.setAnalyzerQueue(analyzerFactory.getQueue());
+
+        int analyzerThreads = Integer.parseInt(
+            ConfigParser.get("URL-PARAMS", "analyzer-threads", "1"));
+        int downloaderThreads = Integer.parseInt(
+            ConfigParser.get("URL-PARAMS", "downloader-threads", "1"));
+        int parserThreads = Integer.parseInt(
+            ConfigParser.get("URL-PARAMS", "parser-threads", "1"));
+
+        WorkersPool<URLData> analyzerPool = 
+            new WorkersPool<URLData>(analyzerThreads, analyzerFactory);
+        WorkersPool<URLData> downloaderPool = 
+            new WorkersPool<URLData>(downloaderThreads, downloaderFactory);
+        WorkersPool<URLData> parserPool = 
+            new WorkersPool<URLData>(parserThreads, parserFactory);
+
+        pools_.add(analyzerPool);
+        pools_.add(downloaderPool);
+        pools_.add(parserPool);
+
+        // Trigger the program adding an URL to the Analyzer Pool
+        String initialUrl = ConfigParser.get("URL-PARAMS", 
+                                             "initial-url", 
+                                             "http://www.atpworldtour.com");
+        URLData initialData = new URLData(0, initialUrl);
+        analyzerPool.addTask(initialData);
+    }
+
 
     private ArrayList<WorkersPool> pools_;
     private StatsManager statsManager_;

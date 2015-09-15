@@ -1,6 +1,8 @@
 package monitor;
 
 import java.util.concurrent.BlockingQueue;
+import logger.Logger;
+import logger.LogLevel;
 
 public class MonitorEvent {
     public enum EventType {

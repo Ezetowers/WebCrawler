@@ -30,9 +30,13 @@ public class WorkersPool<TASK> {
 
     public void stop() {
         for (Thread worker : workers_) {
+            worker.interrupt();
+        }
+    }
+
+    public void join() {
+        for (Thread worker : workers_) {
             try {
-                
-                worker.interrupt();
                 worker.join();
             }
             catch (InterruptedException e) {
