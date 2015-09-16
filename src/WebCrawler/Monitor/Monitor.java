@@ -39,5 +39,4 @@ public class Monitor extends Worker<MonitorEvent> {
     }
 
     private StatsManager statsManager_;
-    private String logPrefix_;
 }

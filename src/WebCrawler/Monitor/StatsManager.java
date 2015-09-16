@@ -48,9 +48,14 @@ public class StatsManager extends Thread {
                 Thread.sleep(refreshPeriodicity_ * 1000);
             }
             catch (InterruptedException e) {
+                // It does not have sense to release the lock here. The program
+                // has already finished. If there is a thread block in this 
+                // lock, it shoulld be interrupted with a InterruptedException
                 Logger.log(LogLevel.INFO, logPrefix_ 
                     + "Stopping Stats Manager Thread: " + e);
-                lock_.readLock().unlock();
+
+                // In case the interrupt variable were not set
+                this.interrupt();
             }
         }
     }

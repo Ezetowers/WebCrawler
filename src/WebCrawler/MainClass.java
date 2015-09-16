@@ -15,29 +15,28 @@ public class MainClass {
 
         // Attach a Hook who will be trigger by the JVM when the program
         // interrupted it's execution by a signal like SIGINT or SIGTERM.
-        // THIS DOESN'T AFFECT THE THREAD WORK. THE APP ITSELF HAS TO 
-        // CLEANLY STOP EVERY THREAD BEFORE QUIT. YOU HAVE BEEN WARNED.
+        // THIS DOESN'T AFFECT THE WORK OF THREADS. THE APP ITSELF HAS THE 
+        // RESPONSIBILITY OF STOP EVERY THREAD BEFORE QUIT. 
+        // YOU HAVE BEEN WARNED.
         WebCrawler app = new WebCrawler();
         Runtime.getRuntime().addShutdownHook(app);
         app.crawl();
         try {
             app.waitThreads();
             app.join();
-            Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Stop crawling.");
-            Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Program finished.");
         }
         catch (InterruptedException e) {
-            System.out.println("[MAIN CLASS] Program interrupted.");
         }
 
+
+        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Stop crawling.");
+        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Program finished.");
         Logger.terminate();
     }
 
     public static void initLogger() {
         String logFileName = ConfigParser.get("BASIC-PARAMS", "log-file");
         String logLevel = ConfigParser.get("BASIC-PARAMS", "log-level");
-
-        Logger logger = Logger.getInstance();
-        logger.init(logFileName, LogLevel.parse(logLevel));
+        Logger.init(logFileName, LogLevel.parse(logLevel));
     }
 }

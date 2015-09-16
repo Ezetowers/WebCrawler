@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 // Project imports
+import concurrent.IWorkersPool;
 import concurrent.WorkersPool;
 import configparser.ConfigParser;
 import logger.Logger;
@@ -29,7 +30,7 @@ import webcrawler.url.URLData;
 public class WebCrawler extends Thread {
     public void crawl() {
         // Init logger and config file
-        pools_ = new ArrayList<WorkersPool>();
+        pools_ = new ArrayList<IWorkersPool>();
 
         this.recreateEnviroment();
 
@@ -45,15 +46,12 @@ public class WebCrawler extends Thread {
     public void run() {
         Logger.log(LogLevel.NOTICE, "[WEBCRAWLER] HOOK RUNNING!!");
         this.stopThreads();
-        /*try {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException e) {
-        }*/
+        this.waitThreads();
         Logger.log(LogLevel.NOTICE, "[WEBCRAWLER] HOOK FINISHED!!");
     }
 
     private void stopThreads() {
+        statsManager_.interrupt();
         this.stopPools();
     }
 
@@ -65,19 +63,19 @@ public class WebCrawler extends Thread {
             // The thread was interrupted, we accomplish our goal. Exit.
         }
 
-        for (WorkersPool pool : pools_) {
+        for (IWorkersPool pool : pools_) {
             pool.join();
         }
     }
 
     private void startPools() {
-        for (WorkersPool pool : pools_) {
+        for (IWorkersPool pool : pools_) {
             pool.start();
         }
     }
 
     private void stopPools() {
-        for (WorkersPool pool : pools_) {
+        for (IWorkersPool pool : pools_) {
             pool.stop();
         }
     }
@@ -259,6 +257,6 @@ public class WebCrawler extends Thread {
     }
 
 
-    private ArrayList<WorkersPool> pools_;
+    private ArrayList<IWorkersPool> pools_;
     private StatsManager statsManager_;
 }

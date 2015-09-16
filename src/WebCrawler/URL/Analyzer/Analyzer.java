@@ -110,7 +110,7 @@ public class Analyzer extends Worker<URLData> {
         counter_.inc();
     }
 
-    public static boolean continueAnalyzing() {
+    private static boolean continueAnalyzing() {
         if (amountURLsToProcess_ == 0) {
             return true;
         }

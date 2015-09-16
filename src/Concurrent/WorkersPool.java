@@ -1,6 +1,7 @@
 package concurrent;
 
 import concurrent.WorkersFactory;
+import concurrent.IWorkersPool;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -8,7 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import logger.Logger;
 import logger.LogLevel;
 
-public class WorkersPool<TASK> {
+public class WorkersPool<TASK> implements IWorkersPool {
     public WorkersPool(int amountWorkers, WorkersFactory<TASK> factory) {
         factory_ = factory;
         workers_ = new ArrayList<Thread>();

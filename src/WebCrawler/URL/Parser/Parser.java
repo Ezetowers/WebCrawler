@@ -70,7 +70,7 @@ public class Parser extends Worker<URLData> {
         this.parseBody(urlData);
     }
 
-    private void parseBody(URLData urlData) {
+    private void parseBody(URLData urlData) throws InterruptedException {
         String[] lines = urlData.body.split("\n");
 
         startTime_ = System.currentTimeMillis();
@@ -79,37 +79,33 @@ public class Parser extends Worker<URLData> {
 
             ResourceMatcher.ResourceMatched matched = 
                 chain_.match(urlData.url, line, resourceMatched);
-            try {
-                switch (matched) {
-                    case URL:
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + "URL parsed: " + resourceMatched[0]);
-                        URLData newUrlData = 
-                            new URLData(urlData.nestingLevel() + 1,
-                                        resourceMatched[0]);
-                        analyzerQueue_.put(newUrlData);
-                        break;
-                    case IMG:
-                    case DOC:
-                    case CSS:
-                    case JS:
-                    
-                        Logger.log(LogLevel.TRACE, urlLogPrefix_ 
-                            + matched.toString() + " parsed: " 
-                            + resourceMatched[0]);
 
-                        resourceQueues_.get(matched.toString()).
-                            put(resourceMatched[0]);
-                        break;
-                    case UNKNOWN:
-                        break;
-                }
-            }
-            catch (InterruptedException e) {
-                Logger.log(LogLevel.ERROR, "Could not insert resource in " 
-                    + matched.toString() + "queue.");
+            switch (matched) {
+                case URL:
+                    Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                        + "URL parsed: " + resourceMatched[0]);
+                    URLData newUrlData = 
+                        new URLData(urlData.nestingLevel() + 1,
+                                    resourceMatched[0]);
+                    analyzerQueue_.put(newUrlData);
+                    break;
+                case IMG:
+                case DOC:
+                case CSS:
+                case JS:
+                
+                    Logger.log(LogLevel.TRACE, urlLogPrefix_ 
+                        + matched.toString() + " parsed: " 
+                        + resourceMatched[0]);
+
+                    resourceQueues_.get(matched.toString()).
+                        put(resourceMatched[0]);
+                    break;
+                case UNKNOWN:
+                    break;
             }
         }
+        
         elapsedTime_ = System.currentTimeMillis() - startTime_;
         Logger.log(LogLevel.DEBUG, urlLogPrefix_ 
             + "Time elapsed processing URL: " + elapsedTime_ + " ms.");
