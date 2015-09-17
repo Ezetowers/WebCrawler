@@ -18,17 +18,15 @@ public abstract class ResourceMatcher {
         next_ = matcher;
     }
 
-    protected ResourceMatched next(String url, String line, String[] match) {
+    public ResourceMatched match(String url, 
+                                 String line, 
+                                 String[] match) {
         if (next_ != null) {
             return next_.match(url, line, match);
         }
 
-        return ResourceMatched.UNKNOWN;
+        return ResourceMatched.UNKNOWN;        
     }
 
-    abstract public ResourceMatched match(String url, 
-                                          String line, 
-                                          String[] match);
-
-    protected ResourceMatcher next_;
+    private ResourceMatcher next_;
 }

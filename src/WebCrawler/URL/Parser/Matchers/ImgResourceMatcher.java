@@ -27,7 +27,7 @@ public class ImgResourceMatcher extends ResourceMatcher {
             }
             else {
                 // This is not an image. Let the next matcher find what to do
-                return this.next(url, line, match);
+                return super.match(url, line, match);
             }            
         }
         else {
@@ -44,7 +44,7 @@ public class ImgResourceMatcher extends ResourceMatcher {
             }
             else {
                 // This is not an image. Let the next matcher find what to do
-                return this.next(url, line, match);
+                return super.match(url, line, match);
             }
         }
 

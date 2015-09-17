@@ -26,7 +26,6 @@ public abstract class Worker<TASK> extends Thread {
             catch (InterruptedException e) {
                 // In case the interrupt variable were not set
                 this.interrupt();
-                break;
             }
         }
 

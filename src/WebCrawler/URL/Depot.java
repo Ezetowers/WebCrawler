@@ -54,7 +54,7 @@ public class Depot {
             Logger.log(LogLevel.DEBUG, "[DEPOT] Inserting URL " + url + ".");
             entry = new DepotEntry(URLArchivedState.TO_BE_DOWNLOADED);
             map_.put(url, entry);
-            // this.serialize();
+            this.serialize();
         }
         else {
             Logger.log(LogLevel.INFO, "[DEPOT] URL " + url 
@@ -74,7 +74,7 @@ public class Depot {
             Logger.log(LogLevel.DEBUG, "[DEPOT] Changing URL " + url 
                 + " to state " + state.toString());
             entry.state = state;
-            // this.serialize();
+            this.serialize();
         } else {
             // TODO: This should not happen!!
             lock_.unlock();
@@ -128,5 +128,5 @@ public class Depot {
     private Hashtable<String, DepotEntry> map_;
     private String depotFilename_;
     private Lock lock_;
-    private static FileWriter fileWriter_;
+    private FileWriter fileWriter_;
 }

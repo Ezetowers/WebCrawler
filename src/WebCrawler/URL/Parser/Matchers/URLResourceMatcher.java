@@ -22,7 +22,7 @@ public class URLResourceMatcher extends ResourceMatcher {
             Matcher nestedMatcher = pattern.matcher(line);
             if (nestedMatcher.find()) {
                 // It is an image, we cannot process this
-                return this.next(url, line, match);
+                return super.match(url, line, match);
             }
 
             if (urlMatched.startsWith("/")) {
@@ -30,12 +30,12 @@ public class URLResourceMatcher extends ResourceMatcher {
             }
             else if (! urlMatched.startsWith("http://") 
                 && ! urlMatched.startsWith("https://")) {
-                return this.next(url, line, match);
+                return super.match(url, line, match);
             }
         }
         else {
             // This is not an image. Let the next matcher find what to do
-            return this.next(url, line, match);
+            return super.match(url, line, match);
         }
 
         // Check if the URL has an extension

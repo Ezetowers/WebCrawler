@@ -14,24 +14,13 @@ public class MainClass {
         MainClass.initLogger();
 
         // Attach a Hook who will be trigger by the JVM when the program
-        // interrupted it's execution by a signal like SIGINT or SIGTERM.
+        // interrupt it's execution by a signal like SIGINT or SIGTERM.
         // THIS DOESN'T AFFECT THE WORK OF THREADS. THE APP ITSELF HAS THE 
-        // RESPONSIBILITY OF STOP EVERY THREAD BEFORE QUIT. 
+        // RESPONSIBILITY OF STOP EVERY THREAD BEFORE QUIT.
         // YOU HAVE BEEN WARNED.
         WebCrawler app = new WebCrawler();
         Runtime.getRuntime().addShutdownHook(app);
         app.crawl();
-        try {
-            app.waitThreads();
-            app.join();
-        }
-        catch (InterruptedException e) {
-        }
-
-
-        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Stop crawling.");
-        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Program finished.");
-        Logger.terminate();
     }
 
     public static void initLogger() {

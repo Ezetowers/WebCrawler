@@ -48,6 +48,10 @@ public class WebCrawler extends Thread {
         this.stopThreads();
         this.waitThreads();
         Logger.log(LogLevel.NOTICE, "[WEBCRAWLER] HOOK FINISHED!!");
+
+        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Stop crawling.");
+        Logger.log(LogLevel.NOTICE, "[MAIN CLASS] Program finished.");
+        Logger.terminate();
     }
 
     private void stopThreads() {

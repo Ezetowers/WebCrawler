@@ -25,7 +25,7 @@ public class CSSResourceMatcher extends ResourceMatcher {
         }
         else {
             // This is not an CSS. Let the next matcher find what to do
-            return this.next(url, line, match);
+            return super.match(url, line, match);
         }
 
         // If we arrived here, we got a valid URL
